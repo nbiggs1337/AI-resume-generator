@@ -15,7 +15,7 @@ export async function checkResumeLimit(userId: string, supabaseClient?: Supabase
   try {
     let profile: any = null
     let accountType: "limited" | "full" = "limited"
-    let limit = 10
+    let limit = 1
 
     try {
       const { data, error } = await supabase
