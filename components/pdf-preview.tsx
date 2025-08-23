@@ -586,7 +586,7 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
         yPosition += 6
 
         doc.setFont("helvetica", "italic")
-        doc.text(edu.institution || "Institution", templateType === "creative" ? margin : margin, yPosition)
+        doc.text(edu.school || "Institution", templateType === "creative" ? margin : margin, yPosition)
         yPosition += 10
       })
     }

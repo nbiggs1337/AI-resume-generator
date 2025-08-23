@@ -270,7 +270,11 @@ export default function UpgradePage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     If you have any issues with your payment or upgrade, please contact our admin team.
                   </p>
-                  <Button variant="outline" className="glass-button border-white/30 bg-transparent">
+                  <Button
+                    variant="outline"
+                    className="glass-button border-white/30 bg-transparent"
+                    onClick={() => router.push("/support")}
+                  >
                     <Mail className="h-4 w-4 mr-2" />
                     Contact Support
                   </Button>
