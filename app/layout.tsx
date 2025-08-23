@@ -1,7 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css"
+import { Suspense } from "react"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -132,7 +135,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">{children}</body>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   )
 }

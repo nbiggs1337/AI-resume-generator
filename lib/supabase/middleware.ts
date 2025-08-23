@@ -2,6 +2,18 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
+  console.log("[v0] Middleware - Processing request:", request.nextUrl.pathname)
+
+  if (
+    request.nextUrl.pathname.startsWith("/_vercel") ||
+    request.nextUrl.pathname.startsWith("/_next") ||
+    request.nextUrl.pathname.includes("/api/_vercel") ||
+    request.headers.get("user-agent")?.includes("vercel")
+  ) {
+    console.log("[v0] Middleware - Skipping analytics/internal request")
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -9,8 +21,8 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  console.log("[v0] Middleware - Supabase URL exists:", !!supabaseUrl)
-  console.log("[v0] Middleware - Supabase Anon Key exists:", !!supabaseAnonKey)
+  // console.log("[v0] Middleware - Supabase URL exists:", !!supabaseUrl)
+  // console.log("[v0] Middleware - Supabase Anon Key exists:", !!supabaseAnonKey)
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error("[v0] Middleware - Missing Supabase environment variables")
@@ -114,12 +126,15 @@ export async function updateSession(request: NextRequest) {
     if (
       request.nextUrl.pathname !== "/" &&
       !user &&
-      !request.nextUrl.pathname.startsWith("/login") &&
       !request.nextUrl.pathname.startsWith("/auth") &&
       !request.nextUrl.pathname.startsWith("/privacy") &&
       !request.nextUrl.pathname.startsWith("/terms") &&
-      !request.nextUrl.pathname.startsWith("/support")
+      !request.nextUrl.pathname.startsWith("/support") &&
+      !request.nextUrl.pathname.startsWith("/faq") &&
+      !request.nextUrl.pathname.startsWith("/docs") &&
+      !request.nextUrl.pathname.startsWith("/tutorials")
     ) {
+      console.log("[v0] Middleware - Redirecting unauthenticated user to login")
       // no user, potentially respond by redirecting the user to the login page
       const url = request.nextUrl.clone()
       url.pathname = "/auth/login"
@@ -129,6 +144,8 @@ export async function updateSession(request: NextRequest) {
     console.error("[v0] Middleware - Error in Supabase client:", error)
     // Continue without authentication on error
   }
+
+  console.log("[v0] Middleware - Request processed successfully")
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
