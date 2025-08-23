@@ -59,17 +59,46 @@ export async function POST(request: NextRequest) {
     // Generate optimization suggestions using AI
     const optimization = await optimizeResumeForJob(resumeData, jobPosting)
 
-    // Save the customization to database
-    const { data: customization, error: saveError } = await supabase
+    const { data: existingCustomization } = await supabase
       .from("resume_customizations")
-      .insert({
-        user_id: user.id,
-        base_resume_id: resumeId, // Changed from resume_id to base_resume_id
-        job_posting_id: jobPostingId,
-        customized_data: optimization, // Changed from optimization_data to customized_data
-      })
-      .select()
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("base_resume_id", resumeId)
+      .eq("job_posting_id", jobPostingId)
       .single()
+
+    let customization
+    let saveError
+
+    if (existingCustomization) {
+      // Update existing customization
+      const { data, error } = await supabase
+        .from("resume_customizations")
+        .update({
+          customized_data: optimization,
+        })
+        .eq("id", existingCustomization.id)
+        .select()
+        .single()
+
+      customization = data
+      saveError = error
+    } else {
+      // Insert new customization
+      const { data, error } = await supabase
+        .from("resume_customizations")
+        .insert({
+          user_id: user.id,
+          base_resume_id: resumeId,
+          job_posting_id: jobPostingId,
+          customized_data: optimization,
+        })
+        .select()
+        .single()
+
+      customization = data
+      saveError = error
+    }
 
     if (saveError) {
       console.error("Error saving customization:", saveError)

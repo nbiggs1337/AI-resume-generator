@@ -69,23 +69,128 @@ export async function POST(request: NextRequest) {
       additional_sections: baseResume.additional_sections || {},
     }
 
+    const cleanSuggestionText = (suggestedText: string): string => {
+      if (!suggestedText) return suggestedText
+
+      // Remove common AI explanatory prefixes
+      const prefixPatterns = [
+        /^Added a new [^:]*:\s*/i,
+        /^Updated [^:]*:\s*/i,
+        /^Revised [^:]*:\s*/i,
+        /^Modified [^:]*:\s*/i,
+        /^Enhanced [^:]*:\s*/i,
+        /^Improved [^:]*:\s*/i,
+        /^Created [^:]*:\s*/i,
+        /^Developed [^:]*:\s*/i,
+        /^.*highlighting.*such as:\s*/i,
+        /^.*emphasizing.*such as:\s*/i,
+        /^.*focusing on.*such as:\s*/i,
+        /^.*including.*such as:\s*/i,
+        /^Here is [^:]*:\s*/i,
+        /^The following [^:]*:\s*/i,
+        /^This [^:]*:\s*/i,
+      ]
+
+      let cleanedText = suggestedText.trim()
+
+      // Apply each pattern to remove prefixes
+      for (const pattern of prefixPatterns) {
+        cleanedText = cleanedText.replace(pattern, "")
+      }
+
+      // Remove quotes if the entire text is wrapped in quotes
+      if (
+        (cleanedText.startsWith("'") && cleanedText.endsWith("'")) ||
+        (cleanedText.startsWith('"') && cleanedText.endsWith('"'))
+      ) {
+        cleanedText = cleanedText.slice(1, -1)
+      }
+
+      return cleanedText.trim()
+    }
+
     // Apply suggestions to the appropriate sections
     appliedSuggestions.forEach((suggestion: any) => {
+      const cleanedSuggestion = cleanSuggestionText(suggestion.suggested)
+
       switch (suggestion.section) {
         case "summary":
-          if (!updatedResumeData.additional_sections.summary) {
-            updatedResumeData.additional_sections.summary = {}
-          }
-          updatedResumeData.additional_sections.summary = suggestion.suggested
+          // Store summary in the correct format
+          updatedResumeData.additional_sections.summary = cleanedSuggestion
           break
         case "experience":
-          // Handle experience updates - this would need more specific logic
+        case "work_experience":
+          // Apply experience suggestions by finding and updating matching experience entries
+          if (updatedResumeData.work_experience && Array.isArray(updatedResumeData.work_experience)) {
+            // Find the experience entry that matches the current text (partial match)
+            const experienceIndex = updatedResumeData.work_experience.findIndex(
+              (exp: any) =>
+                exp.description &&
+                suggestion.current &&
+                (exp.description.includes(suggestion.current.substring(0, 50)) ||
+                  suggestion.current.includes(exp.description.substring(0, 50))),
+            )
+
+            if (experienceIndex !== -1) {
+              updatedResumeData.work_experience[experienceIndex].description = cleanedSuggestion
+            } else {
+              // If no match found, update the first experience entry
+              if (updatedResumeData.work_experience[0]) {
+                updatedResumeData.work_experience[0].description = cleanedSuggestion
+              }
+            }
+          }
           break
         case "skills":
-          // Handle skills updates
+          // Apply skills suggestions
+          if (cleanedSuggestion.includes("Technical Skills:") || cleanedSuggestion.includes("Soft Skills:")) {
+            // Parse the suggested skills format
+            const skillsText = cleanedSuggestion
+            const technicalMatch = skillsText.match(/Technical Skills?:\s*([^]*?)(?=Soft Skills?:|$)/i)
+            const softMatch = skillsText.match(/Soft Skills?:\s*([^]*?)$/i)
+
+            if (technicalMatch || softMatch) {
+              const newSkills: any = {}
+
+              if (technicalMatch) {
+                newSkills.technical = technicalMatch[1]
+                  .split(/[,\n]/)
+                  .map((skill: string) => skill.trim())
+                  .filter((skill: string) => skill.length > 0)
+              }
+
+              if (softMatch) {
+                newSkills.soft = softMatch[1]
+                  .split(/[,\n]/)
+                  .map((skill: string) => skill.trim())
+                  .filter((skill: string) => skill.length > 0)
+              }
+
+              // Merge with existing skills
+              updatedResumeData.skills = {
+                ...updatedResumeData.skills,
+                ...newSkills,
+              }
+            }
+          }
           break
         case "education":
-          // Handle education updates
+          // Apply education suggestions by updating the first education entry
+          if (
+            updatedResumeData.education &&
+            Array.isArray(updatedResumeData.education) &&
+            updatedResumeData.education[0]
+          ) {
+            // Update the degree field with the suggested text
+            updatedResumeData.education[0].degree = cleanedSuggestion
+          }
+          break
+        default:
+          // For any other sections, store in additional_sections
+          if (!updatedResumeData.additional_sections[suggestion.section]) {
+            updatedResumeData.additional_sections[suggestion.section] = {}
+          }
+          updatedResumeData.additional_sections[suggestion.section] = cleanedSuggestion
           break
       }
     })

@@ -95,18 +95,41 @@ export default function CustomizeResumePage() {
         .single()
 
       if (existingCustomization) {
-        setOptimization(existingCustomization.customized_data)
-        setCustomizationId(existingCustomization.id)
+        console.log("[v0] Found existing customization:", existingCustomization)
+
+        const customizedData = existingCustomization.customized_data
+        const hasValidFormat =
+          customizedData &&
+          typeof customizedData.overallScore !== "undefined" &&
+          Array.isArray(customizedData.suggestions) &&
+          Array.isArray(customizedData.keywordMatches) &&
+          Array.isArray(customizedData.missingKeywords)
+
+        if (hasValidFormat) {
+          console.log("[v0] Existing customization has valid format, using it")
+          setOptimization(customizedData)
+          setCustomizationId(existingCustomization.id)
+          setLoading(false)
+        } else {
+          console.log("[v0] Existing customization has invalid format, re-running optimization")
+          setLoading(false)
+          // Re-run optimization with the correct format
+          handleOptimizeInternal()
+        }
+      } else {
+        console.log("[v0] No existing customization found, starting automatic optimization")
+        setLoading(false)
+        // Start optimization automatically
+        handleOptimizeInternal()
       }
     } catch (error) {
       console.error("[v0] Error loading data:", error)
       setError("Failed to load resume or job posting data")
-    } finally {
       setLoading(false)
     }
   }
 
-  const handleOptimize = async () => {
+  const handleOptimizeInternal = async () => {
     if (!params.resumeId || !params.jobId || params.resumeId === "undefined" || params.jobId === "undefined") {
       console.error("[v0] Cannot optimize with invalid IDs:", { resumeId: params.resumeId, jobId: params.jobId })
       setError("Cannot optimize: Invalid resume or job ID")
@@ -141,6 +164,10 @@ export default function CustomizeResumePage() {
     } finally {
       setOptimizing(false)
     }
+  }
+
+  const handleOptimize = async () => {
+    await handleOptimizeInternal()
   }
 
   const toggleSuggestion = (index: number) => {
@@ -252,23 +279,24 @@ export default function CustomizeResumePage() {
               </p>
             </div>
 
-            {!optimization && (
-              <Button onClick={handleOptimize} disabled={optimizing} className="bg-blue-600 hover:bg-blue-700">
-                {optimizing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Optimize with AI
-                  </>
-                )}
+            {!optimization && !optimizing && (
+              <Button onClick={handleOptimize} className="bg-blue-600 hover:bg-blue-700">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Optimize with AI
               </Button>
             )}
           </div>
         </div>
+
+        {optimizing && (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Analyzing Your Resume</h2>
+            <p className="text-slate-600">
+              Our AI is comparing your resume with the job requirements and generating personalized suggestions...
+            </p>
+          </div>
+        )}
 
         {optimization && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -288,22 +316,22 @@ export default function CustomizeResumePage() {
                     <div>
                       <h4 className="font-semibold text-sm mb-2">Keyword Matches</h4>
                       <div className="flex flex-wrap gap-1">
-                        {optimization.keywordMatches.map((keyword, index) => (
+                        {optimization.keywordMatches?.map((keyword, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
-                        ))}
+                        )) || <span className="text-sm text-slate-500">No keyword matches found</span>}
                       </div>
                     </div>
 
                     <div>
                       <h4 className="font-semibold text-sm mb-2">Missing Keywords</h4>
                       <div className="flex flex-wrap gap-1">
-                        {optimization.missingKeywords.map((keyword, index) => (
+                        {optimization.missingKeywords?.map((keyword, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {keyword}
                           </Badge>
-                        ))}
+                        )) || <span className="text-sm text-slate-500">No missing keywords identified</span>}
                       </div>
                     </div>
                   </div>
@@ -319,7 +347,7 @@ export default function CustomizeResumePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {optimization.suggestions.map((suggestion, index) => (
+                    {optimization.suggestions?.map((suggestion, index) => (
                       <div
                         key={index}
                         className={`border rounded-lg p-4 cursor-pointer transition-colors ${
@@ -372,7 +400,11 @@ export default function CustomizeResumePage() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )) || (
+                      <div className="text-center py-8">
+                        <p className="text-slate-500">No suggestions available</p>
+                      </div>
+                    )}
                   </div>
 
                   {selectedSuggestions.size > 0 && (
