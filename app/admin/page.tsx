@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Users, FileText, UserCheck, UserX, Activity } from "lucide-react"
+import { Users, FileText, UserCheck, UserX, Activity, MessageSquare } from "lucide-react"
 
 export default async function AdminDashboard() {
   await requireAdmin()
@@ -17,6 +17,8 @@ export default async function AdminDashboard() {
     { count: totalResumes },
     { count: activeUsers },
     { count: bannedUsers },
+    { count: totalSupportRequests },
+    { count: openSupportRequests },
     { data: recentUsers },
     { data: recentResumes },
   ] = await Promise.all([
@@ -24,6 +26,8 @@ export default async function AdminDashboard() {
     supabase.from("resumes").select("*", { count: "exact", head: true }),
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", false),
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_banned", true),
+    supabase.from("support_requests").select("*", { count: "exact", head: true }),
+    supabase.from("support_requests").select("*", { count: "exact", head: true }).eq("status", "open"),
     supabase
       .from("profiles")
       .select("id, full_name, email, created_at, is_admin, is_banned")
@@ -79,11 +83,23 @@ export default async function AdminDashboard() {
               <FileText className="h-4 w-4" />
               Resume Management
             </Link>
+            <Link
+              href="/admin/requests"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground hover:bg-primary/10 transition-all duration-200 glass-hover"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Support Requests
+              {openSupportRequests && openSupportRequests > 0 && (
+                <Badge variant="destructive" className="ml-auto text-xs">
+                  {openSupportRequests}
+                </Badge>
+              )}
+            </Link>
           </nav>
         </aside>
 
         <main className="flex-1 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-foreground">Total Users</CardTitle>
@@ -133,6 +149,19 @@ export default async function AdminDashboard() {
               <CardContent>
                 <div className="text-3xl font-bold text-destructive">{bannedUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">Suspended accounts</p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-foreground">Support Requests</CardTitle>
+                <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center glass">
+                  <MessageSquare className="h-5 w-5 text-orange-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{totalSupportRequests || 0}</div>
+                <p className="text-xs text-muted-foreground">{openSupportRequests || 0} open requests</p>
               </CardContent>
             </Card>
           </div>
