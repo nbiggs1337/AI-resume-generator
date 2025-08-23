@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import Link from "next/link"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -325,15 +326,21 @@ export default function SupportPage() {
                 Check out our frequently asked questions or browse our documentation for quick answers.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button variant="outline" className="glass-button bg-transparent">
-                  View FAQ
-                </Button>
-                <Button variant="outline" className="glass-button bg-transparent">
-                  Documentation
-                </Button>
-                <Button variant="outline" className="glass-button bg-transparent">
-                  Video Tutorials
-                </Button>
+                <Link href="/faq">
+                  <Button variant="outline" className="glass-button bg-transparent">
+                    View FAQ
+                  </Button>
+                </Link>
+                <Link href="/docs">
+                  <Button variant="outline" className="glass-button bg-transparent">
+                    Documentation
+                  </Button>
+                </Link>
+                <Link href="/tutorials">
+                  <Button variant="outline" className="glass-button bg-transparent">
+                    Video Tutorials
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
