@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import DashboardClient from "@/components/dashboard-client"
+import PDFDownloadButton from "@/components/pdf-download-button"
 import {
   Plus,
   FileText,
@@ -15,7 +16,6 @@ import {
   BarChart3,
   Briefcase,
   Sparkles,
-  Download,
   Eye,
   Edit,
   HelpCircle,
@@ -259,10 +259,7 @@ export default async function DashboardPage() {
                             Edit
                           </Button>
                         </Link>
-                        <Button variant="outline" size="sm" className="glass-button border-white/30 bg-transparent">
-                          <Download className="h-4 w-4 mr-1" />
-                          PDF
-                        </Button>
+                        <PDFDownloadButton resumeId={resume.id} resumeTitle={resume.title} />
                       </div>
                     </CardContent>
                   </Card>
