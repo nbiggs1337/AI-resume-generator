@@ -259,7 +259,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="text-center text-muted-foreground">
-            <p className="text-lg">&copy; 2024 ResumeAI. All rights reserved.</p>
+            <p className="text-lg">&copy; 2025 ResumeAI. All rights reserved.</p>
           </div>
         </div>
       </footer>
