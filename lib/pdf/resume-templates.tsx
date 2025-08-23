@@ -657,7 +657,7 @@ export const AcademicResumeTemplate: React.FC<{ data: ResumeData }> = ({ data })
             <View key={index} style={{ marginBottom: 10 }}>
               <Text style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{edu.degree}</Text>
               <Text style={{ fontSize: 10, color: "#64748b" }}>
-                {edu.school}, {edu.graduation_date}
+                {edu.school}, {edu.location}
               </Text>
               {edu.gpa && <Text style={{ fontSize: 9, color: "#64748b" }}>GPA: {edu.gpa}</Text>}
             </View>
@@ -1105,8 +1105,7 @@ export const RESUME_TEMPLATES = {
 
 export const TEMPLATE_CATEGORIES = {
   free: ["harvard"],
-  premium: ["executive", "creative", "academic", "tech"],
-  basic: ["modern", "classic"],
+  premium: ["executive", "creative", "academic", "tech", "classic", "modern"],
 } as const
 
 export type TemplateType = keyof typeof RESUME_TEMPLATES

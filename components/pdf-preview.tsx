@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Eye, FileText, Loader2, Crown } from "lucide-react"
 import jsPDF from "jspdf"
 import { TEMPLATE_CATEGORIES, type TemplateType } from "@/lib/pdf/resume-templates"
+import { useResumeLimit } from "@/hooks/use-resume-limit"
 
 interface PDFPreviewProps {
   resumeId: string
@@ -18,7 +19,8 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
   const [generating, setGenerating] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  const hasPremiumAccess = true // TODO: Replace with actual premium check
+  const { limitData } = useResumeLimit()
+  const hasPremiumAccess = limitData?.accountType === "full"
 
   const generatePDFWithJsPDF = (resumeData: any, templateType: TemplateType) => {
     const doc = new jsPDF()

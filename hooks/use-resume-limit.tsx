@@ -20,7 +20,7 @@ export function useResumeLimit() {
         throw new Error("User not authenticated")
       }
 
-      const data = await checkResumeLimit(supabase, user.id)
+      const data = await checkResumeLimit(user.id, supabase)
       setLimitData(data)
       setError(null)
     } catch (err) {
