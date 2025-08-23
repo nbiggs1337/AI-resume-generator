@@ -113,28 +113,37 @@ export function JobAnalyzerForm() {
   const handleSaveAndCustomize = async () => {
     if (!jobData) return
 
+    console.log("[v0] Starting handleSaveAndCustomize with jobData:", jobData)
     setIsLoading(true)
     try {
+      const requestBody = {
+        url: url || "Manual Entry",
+        ...jobData,
+      }
+      console.log("[v0] Making POST request to /api/save-job with body:", requestBody)
+
       const response = await fetch("/api/save-job", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          url: url || "Manual Entry",
-          ...jobData,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log("[v0] Response status:", response.status)
+      console.log("[v0] Response ok:", response.ok)
+
       const data = await response.json()
+      console.log("[v0] Response data:", data)
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to save job posting")
       }
 
+      console.log("[v0] Navigating to customize-resume with jobId:", data.jobId)
       router.push(`/customize-resume?jobId=${data.jobId}`)
     } catch (error) {
-      console.error("Error saving job:", error)
+      console.error("[v0] Error saving job:", error)
       setError(error instanceof Error ? error.message : "Failed to save job posting")
     } finally {
       setIsLoading(false)

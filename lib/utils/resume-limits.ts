@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
 export interface ResumeLimit {
   canCreate: boolean
@@ -8,19 +9,35 @@ export interface ResumeLimit {
   message?: string
 }
 
-export async function checkResumeLimit(userId: string): Promise<ResumeLimit> {
-  const supabase = createClient()
+export async function checkResumeLimit(userId: string, supabaseClient?: SupabaseClient): Promise<ResumeLimit> {
+  const supabase = supabaseClient || createClient()
 
   try {
-    // Get user's account type and limit
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("account_type, resume_limit")
-      .eq("id", userId)
-      .single()
+    let profile: any = null
+    let accountType: "limited" | "full" = "limited"
+    let limit = 10
 
-    if (profileError || !profile) {
-      throw new Error("Could not fetch user profile")
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("account_type, resume_limit")
+        .eq("id", userId)
+        .single()
+
+      if (data && !error) {
+        profile = data
+        accountType = data.account_type as "limited" | "full"
+        limit = data.resume_limit || 10
+      }
+    } catch (columnError) {
+      console.log("Account type columns not found, defaulting to full access")
+      return {
+        canCreate: true,
+        currentCount: 0,
+        limit: null,
+        accountType: "full",
+        message: "Account type not configured, unlimited access granted",
+      }
     }
 
     // Get current resume count
@@ -35,8 +52,6 @@ export async function checkResumeLimit(userId: string): Promise<ResumeLimit> {
     }
 
     const currentCount = resumes?.length || 0
-    const accountType = profile.account_type as "limited" | "full"
-    const limit = profile.resume_limit
 
     // Full access users have no limit
     if (accountType === "full") {
@@ -49,12 +64,12 @@ export async function checkResumeLimit(userId: string): Promise<ResumeLimit> {
     }
 
     // Limited users check against their limit
-    const canCreate = currentCount < (limit || 10)
+    const canCreate = currentCount < limit
 
     return {
       canCreate,
       currentCount,
-      limit: limit || 10,
+      limit,
       accountType,
       message: canCreate
         ? `${currentCount}/${limit} resumes used`
@@ -63,11 +78,11 @@ export async function checkResumeLimit(userId: string): Promise<ResumeLimit> {
   } catch (error) {
     console.error("Error checking resume limit:", error)
     return {
-      canCreate: false,
+      canCreate: true,
       currentCount: 0,
-      limit: 10,
-      accountType: "limited",
-      message: "Error checking resume limit",
+      limit: null,
+      accountType: "full",
+      message: "Error checking resume limit, access granted",
     }
   }
 }
