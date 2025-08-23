@@ -76,7 +76,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     console.log("[v0] Stripe webhook: Upgrading user account", supabaseUserId)
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Update user account to full access
     const { error: updateError } = await supabase
@@ -86,6 +86,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         resume_limit: null,
         payment_method: "stripe",
         upgraded_at: new Date().toISOString(),
+        stripe_customer_id: session.customer as string,
       })
       .eq("id", supabaseUserId)
 
@@ -94,7 +95,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       return
     }
 
-    console.log("[v0] Stripe webhook: User account upgraded successfully via webhook")
+    console.log("[v0] Stripe webhook: User account upgraded successfully via webhook", {
+      userId: supabaseUserId,
+      customerId: session.customer,
+      sessionId: session.id,
+    })
   } catch (error) {
     console.error("[v0] Stripe webhook: Error handling checkout session completed", error)
   }

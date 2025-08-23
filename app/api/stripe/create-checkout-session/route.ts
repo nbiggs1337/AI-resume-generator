@@ -51,6 +51,18 @@ export async function POST(request: NextRequest) {
     // Create or retrieve Stripe customer
     let customerId = profile.stripe_customer_id
 
+    if (customerId) {
+      try {
+        // Verify the stored customer ID exists in Stripe
+        console.log("[v0] Stripe checkout: Verifying existing customer", customerId)
+        await stripe.customers.retrieve(customerId)
+        console.log("[v0] Stripe checkout: Using existing customer", customerId)
+      } catch (error) {
+        console.log("[v0] Stripe checkout: Stored customer ID invalid, creating new customer")
+        customerId = null // Reset to create a new customer
+      }
+    }
+
     if (!customerId) {
       console.log("[v0] Stripe checkout: Creating new Stripe customer")
       const customer = await stripe.customers.create({
