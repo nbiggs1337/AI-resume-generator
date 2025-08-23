@@ -103,7 +103,7 @@ export default function RootLayout({
               name: "ResumeAI - AI Resume Builder",
               description:
                 "AI-powered resume builder that creates professional, ATS-friendly resumes customized for specific job applications",
-              url: "https://ai-resume-generator.vercel.app",
+              url: "https://freeresumeai.vercel.app/",
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web Browser",
               offers: {

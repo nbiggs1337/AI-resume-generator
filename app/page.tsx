@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     description:
       "Build professional, ATS-friendly resumes with our free AI resume builder. Get job-specific optimization and land more interviews.",
     type: "website",
-    url: "https://ai-resume-generator.vercel.app",
+    url: "https://freeresumeai.vercel.app/",
   },
   alternates: {
-    canonical: "https://ai-resume-generator.vercel.app",
+    canonical: "https://freeresumeai.vercel.app/",
   },
 }
 
@@ -43,7 +43,7 @@ export default async function HomePage() {
             "@type": "WebPage",
             name: "Free AI Resume Builder - ResumeAI",
             description: "Create professional, ATS-friendly resumes with AI-powered optimization",
-            url: "https://ai-resume-generator.vercel.app",
+            url: "https://freeresumeai.vercel.app/",
             mainEntity: {
               "@type": "SoftwareApplication",
               name: "ResumeAI",
