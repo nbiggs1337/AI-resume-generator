@@ -39,17 +39,8 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "50")
     const offset = (page - 1) * limit
 
-    // Build query
-    let query = supabase
-      .from("support_requests")
-      .select(`
-        *,
-        profiles(
-          full_name,
-          email
-        )
-      `)
-      .order("created_at", { ascending: false })
+    // Build query - fetch support requests first, then get user profiles separately
+    let query = supabase.from("support_requests").select("*").order("created_at", { ascending: false })
 
     // Apply filters
     if (status) {
@@ -72,6 +63,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch support requests" }, { status: 500 })
     }
 
+    let requestsWithProfiles = requests || []
+
+    if (requests && requests.length > 0) {
+      // Get unique user IDs from requests
+      const userIds = [...new Set(requests.map((req) => req.user_id).filter(Boolean))]
+
+      if (userIds.length > 0) {
+        // Fetch profiles for these users
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds)
+
+        if (!profilesError && profiles) {
+          // Create a map of user profiles
+          const profileMap = new Map(profiles.map((profile) => [profile.id, profile]))
+
+          // Merge profiles with requests
+          requestsWithProfiles = requests.map((request) => ({
+            ...request,
+            profiles: request.user_id ? profileMap.get(request.user_id) || null : null,
+          }))
+        }
+      }
+    }
+
     // Get total count for pagination
     let countQuery = supabase.from("support_requests").select("*", { count: "exact", head: true })
 
@@ -88,7 +105,7 @@ export async function GET(request: NextRequest) {
     console.log("[v0] Fetched", requests?.length, "support requests")
 
     return NextResponse.json({
-      requests: requests || [],
+      requests: requestsWithProfiles,
       pagination: {
         page,
         limit,

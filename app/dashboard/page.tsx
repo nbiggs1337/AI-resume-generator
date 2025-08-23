@@ -18,6 +18,7 @@ import {
   Download,
   Eye,
   Edit,
+  HelpCircle,
 } from "lucide-react"
 
 export default async function DashboardPage() {
@@ -86,6 +87,11 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">Welcome, {profile?.full_name || user.email}</span>
+            <Link href="/support">
+              <Button variant="ghost" size="sm" className="glass-button border-0">
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </Link>
             <Link href="/profile">
               <Button variant="ghost" size="sm" className="glass-button border-0">
                 <Settings className="h-4 w-4" />
