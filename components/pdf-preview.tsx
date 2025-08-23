@@ -403,7 +403,12 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
       yPosition += 5
     }
 
-    if (resumeData.certifications?.length > 0) {
+    const validCertifications =
+      resumeData.certifications?.filter(
+        (cert: any) => (cert.name && cert.name.trim()) || (cert.issuer && cert.issuer.trim()),
+      ) || []
+
+    if (validCertifications.length > 0) {
       if (yPosition > pageHeight - 40) {
         doc.addPage()
         yPosition = margin
@@ -411,7 +416,7 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
       yPosition = addSection("Certifications", templateType === "creative" ? margin : margin, yPosition)
 
-      resumeData.certifications.forEach((cert: any) => {
+      validCertifications.forEach((cert: any) => {
         if (yPosition > pageHeight - 20) {
           doc.addPage()
           yPosition = margin
@@ -420,7 +425,8 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
         // Certification name
         doc.setFontSize(11)
         doc.setFont("helvetica", "bold")
-        doc.text(cert.name || "Certification", templateType === "creative" ? margin : margin, yPosition)
+        const certName = cert.name && cert.name.trim() ? cert.name : "Certification"
+        doc.text(certName, templateType === "creative" ? margin : margin, yPosition)
 
         // Date on the right
         if (cert.date || cert.issue_date) {
@@ -437,11 +443,12 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         // Issuer
         doc.setFont("helvetica", "italic")
-        doc.text(cert.issuer || "Issuing Organization", templateType === "creative" ? margin : margin, yPosition)
+        const issuerName = cert.issuer && cert.issuer.trim() ? cert.issuer : "Issuing Organization"
+        doc.text(issuerName, templateType === "creative" ? margin : margin, yPosition)
         yPosition += 5
 
         // Credential ID if available
-        if (cert.credential_id) {
+        if (cert.credential_id && cert.credential_id.trim()) {
           doc.setFontSize(9)
           doc.setFont("helvetica", "normal")
           doc.text(`ID: ${cert.credential_id}`, templateType === "creative" ? margin : margin, yPosition)
