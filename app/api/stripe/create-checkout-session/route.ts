@@ -1,12 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe/server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Stripe checkout session creation started")
 
-    const supabase = createClient()
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("[v0] STRIPE_SECRET_KEY not found in environment")
+      return NextResponse.json({ error: "Stripe configuration error" }, { status: 500 })
+    }
+
+    const { stripe } = await import("@/lib/stripe/server")
+    console.log("[v0] Stripe module imported successfully")
+
+    const supabase = await createClient()
 
     // Get the current user
     const {
@@ -93,6 +100,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("[v0] Stripe checkout error:", error)
+    if (error instanceof Error) {
+      console.error("[v0] Error message:", error.message)
+      console.error("[v0] Error stack:", error.stack)
+    }
     return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 })
   }
 }
