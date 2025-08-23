@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { Users, ArrowLeft, Search, CreditCard, Bitcoin } from "lucide-react"
+import { Users, ArrowLeft, Search } from "lucide-react"
 import { UserActionsDropdown } from "@/components/admin/user-actions-dropdown"
+import { PaymentDetailsToggle } from "@/components/admin/payment-details-toggle"
 
 interface SearchParams {
   search?: string
@@ -30,7 +31,7 @@ export default async function UserManagement({
   let query = supabase
     .from("profiles")
     .select(
-      "id, full_name, email, created_at, is_admin, is_banned, banned_at, banned_reason, account_type, resume_limit, payment_method, upgraded_at, stripe_customer_id",
+      "id, full_name, email, created_at, is_admin, is_banned, banned_at, banned_reason, account_type, resume_limit, payment_method, upgraded_at, stripe_customer_id, payment_reference",
     )
     .order("created_at", { ascending: false })
 
@@ -169,46 +170,7 @@ export default async function UserManagement({
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {user.account_type === "full" && user.payment_method ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              {user.payment_method === "stripe" ? (
-                                <>
-                                  <CreditCard className="h-3 w-3 text-blue-600" />
-                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                    Stripe
-                                  </Badge>
-                                </>
-                              ) : user.payment_method === "bitcoin" ? (
-                                <>
-                                  <Bitcoin className="h-3 w-3 text-orange-600" />
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs bg-orange-50 text-orange-700 border-orange-200"
-                                  >
-                                    Bitcoin
-                                  </Badge>
-                                </>
-                              ) : (
-                                <Badge variant="outline" className="text-xs glass border-white/30">
-                                  {user.payment_method}
-                                </Badge>
-                              )}
-                            </div>
-                            {user.upgraded_at && (
-                              <div className="text-xs text-muted-foreground">
-                                Upgraded: {new Date(user.upgraded_at).toLocaleDateString()}
-                              </div>
-                            )}
-                            {user.stripe_customer_id && (
-                              <div className="text-xs text-muted-foreground font-mono">
-                                {user.stripe_customer_id.substring(0, 12)}...
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">Free account</div>
-                        )}
+                        <PaymentDetailsToggle user={user} />
                       </td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">
                         {new Date(user.created_at).toLocaleDateString()}
