@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Share, Trash2 } from "lucide-react"
+import { ArrowLeft, Edit, Share, Trash2, Check, Copy } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { PDFPreview } from "@/components/pdf-preview"
+import { useToast } from "@/hooks/use-toast"
 
 function isValidUUID(str: string): boolean {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -25,6 +26,10 @@ export default function ResumeViewPage() {
   const [resume, setResume] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [shareIcon, setShareIcon] = useState<"share" | "copy" | "check">("share")
+  const { toast } = useToast()
 
   const supabase = createClient()
 
@@ -40,7 +45,6 @@ export default function ResumeViewPage() {
       console.log("[v0] Non-UUID path detected:", id)
       setError("Invalid resume ID format")
       setLoading(false)
-      // Don't redirect immediately, let the user see the error
       setTimeout(() => {
         router.push("/dashboard")
       }, 2000)
@@ -94,6 +98,69 @@ export default function ResumeViewPage() {
     skills: resume.skills || { technical: [], soft: [] },
   }
 
+  const handleShare = async () => {
+    try {
+      const url = window.location.href
+      await navigator.clipboard.writeText(url)
+      setShareIcon("check")
+      toast({
+        title: "Link copied!",
+        description: "Resume link has been copied to your clipboard.",
+      })
+      setTimeout(() => setShareIcon("share"), 2000)
+    } catch (error) {
+      setShareIcon("copy")
+      toast({
+        title: "Copy link",
+        description: "Please copy the URL from your browser's address bar.",
+      })
+      setTimeout(() => setShareIcon("share"), 3000)
+    }
+  }
+
+  const handleEdit = () => {
+    router.push(`/builder?edit=${resume.id}`)
+  }
+
+  const handleDelete = async () => {
+    if (!showDeleteConfirm) {
+      setShowDeleteConfirm(true)
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/resumes/${resume.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to delete resume")
+      }
+
+      toast({
+        title: "Resume deleted",
+        description: "Your resume has been successfully deleted.",
+      })
+
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Error deleting resume:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete resume. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
@@ -117,150 +184,165 @@ export default function ResumeViewPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Share className="h-4 w-4 mr-2" />
-                Share
+              <Button variant="outline" size="sm" onClick={handleShare}>
+                {shareIcon === "check" ? (
+                  <Check className="h-4 w-4 mr-2 text-green-600" />
+                ) : shareIcon === "copy" ? (
+                  <Copy className="h-4 w-4 mr-2" />
+                ) : (
+                  <Share className="h-4 w-4 mr-2" />
+                )}
+                {shareIcon === "check" ? "Copied!" : "Share"}
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+              {!showDeleteConfirm ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              ) : (
+                <div className="flex gap-1">
+                  <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting ? "Deleting..." : "Confirm"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleCancelDelete} disabled={isDeleting}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Main PDF Preview - Takes up most of the space */}
-          <div className="xl:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-slate-900 mb-4">Resume Preview</h2>
-              <PDFPreview resumeId={resume.id} resumeTitle={resume.title} />
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <div className="xl:col-span-3">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-xl font-semibold text-slate-900 mb-4">Resume Preview</h2>
+                <PDFPreview resumeId={resume.id} resumeTitle={resume.title} />
+              </div>
             </div>
-          </div>
 
-          {/* Sidebar with Resume Details */}
-          <div className="xl:col-span-1 space-y-4">
-            {/* Personal Information */}
-            {content.personal_info && Object.keys(content.personal_info).length > 0 && (
-              <Card className="text-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Personal Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="font-semibold text-sm">{content.personal_info?.full_name || "Name not provided"}</p>
-                    <p className="text-xs text-slate-600">{content.personal_info?.email || ""}</p>
-                    <p className="text-xs text-slate-600">{content.personal_info?.phone || ""}</p>
-                    <p className="text-xs text-slate-600">{content.personal_info?.location || ""}</p>
-                    {content.personal_info?.linkedin && (
-                      <p className="text-xs text-blue-600">{content.personal_info.linkedin}</p>
+            <div className="xl:col-span-1 space-y-4">
+              {content.personal_info && Object.keys(content.personal_info).length > 0 && (
+                <Card className="text-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Personal Info</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <p className="font-semibold text-sm">{content.personal_info?.full_name || "Name not provided"}</p>
+                      <p className="text-xs text-slate-600">{content.personal_info?.email || ""}</p>
+                      <p className="text-xs text-slate-600">{content.personal_info?.phone || ""}</p>
+                      <p className="text-xs text-slate-600">{content.personal_info?.location || ""}</p>
+                      {content.personal_info?.linkedin && (
+                        <p className="text-xs text-blue-600">{content.personal_info.linkedin}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {content.summary && (
+                <Card className="text-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-slate-700 leading-relaxed line-clamp-4">{content.summary}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {content.skills && (content.skills.technical?.length > 0 || content.skills.soft?.length > 0) && (
+                <Card className="text-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Skills</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {content.skills.technical && content.skills.technical.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-xs text-slate-900 mb-1">Technical</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {content.skills.technical.slice(0, 6).map((skill: string, index: number) => (
+                            <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {content.skills.technical.length > 6 && (
+                            <Badge variant="outline" className="text-xs px-2 py-0">
+                              +{content.skills.technical.length - 6} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Summary */}
-            {content.summary && (
-              <Card className="text-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-slate-700 leading-relaxed line-clamp-4">{content.summary}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Skills */}
-            {content.skills && (content.skills.technical?.length > 0 || content.skills.soft?.length > 0) && (
-              <Card className="text-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Skills</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {content.skills.technical && content.skills.technical.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-xs text-slate-900 mb-1">Technical</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {content.skills.technical.slice(0, 6).map((skill: string, index: number) => (
-                          <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {content.skills.technical.length > 6 && (
-                          <Badge variant="outline" className="text-xs px-2 py-0">
-                            +{content.skills.technical.length - 6} more
-                          </Badge>
-                        )}
+                    {content.skills.soft && content.skills.soft.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-xs text-slate-900 mb-1">Soft Skills</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {content.skills.soft.slice(0, 4).map((skill: string, index: number) => (
+                            <Badge key={index} variant="outline" className="text-xs px-2 py-0">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {content.skills.soft.length > 4 && (
+                            <Badge variant="outline" className="text-xs px-2 py-0">
+                              +{content.skills.soft.length - 4} more
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {content.skills.soft && content.skills.soft.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-xs text-slate-900 mb-1">Soft Skills</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {content.skills.soft.slice(0, 4).map((skill: string, index: number) => (
-                          <Badge key={index} variant="outline" className="text-xs px-2 py-0">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {content.skills.soft.length > 4 && (
-                          <Badge variant="outline" className="text-xs px-2 py-0">
-                            +{content.skills.soft.length - 4} more
-                          </Badge>
-                        )}
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {content.experience && content.experience.length > 0 && (
+                <Card className="text-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Experience ({content.experience.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {content.experience.slice(0, 3).map((exp: any, index: number) => (
+                      <div key={index} className="border-l-2 border-blue-200 pl-2">
+                        <h3 className="font-semibold text-xs text-slate-900">{exp.title}</h3>
+                        <p className="text-xs text-blue-600">{exp.company}</p>
+                        <p className="text-xs text-slate-500">
+                          {exp.start_date} - {exp.end_date}
+                        </p>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    ))}
+                    {content.experience.length > 3 && (
+                      <p className="text-xs text-slate-500 italic">+{content.experience.length - 3} more positions</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Experience Summary */}
-            {content.experience && content.experience.length > 0 && (
-              <Card className="text-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Experience ({content.experience.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {content.experience.slice(0, 3).map((exp: any, index: number) => (
-                    <div key={index} className="border-l-2 border-blue-200 pl-2">
-                      <h3 className="font-semibold text-xs text-slate-900">{exp.title}</h3>
-                      <p className="text-xs text-blue-600">{exp.company}</p>
-                      <p className="text-xs text-slate-500">
-                        {exp.start_date} - {exp.end_date}
-                      </p>
-                    </div>
-                  ))}
-                  {content.experience.length > 3 && (
-                    <p className="text-xs text-slate-500 italic">+{content.experience.length - 3} more positions</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Education Summary */}
-            {content.education && content.education.length > 0 && (
-              <Card className="text-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Education</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {content.education.map((edu: any, index: number) => (
-                    <div key={index}>
-                      <h3 className="font-semibold text-xs text-slate-900">{edu.degree}</h3>
-                      <p className="text-xs text-blue-600">{edu.school}</p>
-                      <p className="text-xs text-slate-500">{edu.graduation_date}</p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+              {content.education && content.education.length > 0 && (
+                <Card className="text-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Education</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {content.education.map((edu: any, index: number) => (
+                      <div key={index}>
+                        <h3 className="font-semibold text-xs text-slate-900">{edu.degree}</h3>
+                        <p className="text-xs text-blue-600">{edu.school}</p>
+                        <p className="text-xs text-slate-500">{edu.graduation_date}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>

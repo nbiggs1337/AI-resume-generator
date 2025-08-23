@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
       .from("resume_customizations")
       .select(`
         *,
-        resumes!resume_customizations_base_resume_id_fkey (*)
+        resumes!resume_customizations_base_resume_id_fkey (*),
+        job_postings!resume_customizations_job_posting_id_fkey (*)
       `)
       .eq("id", customizationId)
       .eq("user_id", user.id)
@@ -35,8 +36,14 @@ export async function POST(request: NextRequest) {
     }
 
     const baseResume = customization.resumes
+    const jobPosting = customization.job_postings
+
+    const customizedTitle = jobPosting
+      ? `${baseResume.title} - ${jobPosting.title} - ${jobPosting.company}`
+      : `${baseResume.title} (Customized)`
+
     const updatedResumeData = {
-      title: `${baseResume.title} (Customized)`,
+      title: customizedTitle,
       work_experience: baseResume.work_experience,
       education: baseResume.education,
       skills: baseResume.skills,

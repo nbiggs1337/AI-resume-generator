@@ -88,6 +88,14 @@ export default function ResumeBuilderPage() {
         gpa: "",
       },
     ],
+    certifications: [
+      {
+        name: "",
+        issuer: "",
+        date: "",
+        credential_id: "",
+      },
+    ],
     skills: {
       technical: [],
       soft: [],
@@ -156,6 +164,14 @@ export default function ResumeBuilderPage() {
             gpa: "",
           },
         ],
+        certifications: data.certifications || [
+          {
+            name: "",
+            issuer: "",
+            date: "",
+            credential_id: "",
+          },
+        ],
         skills: data.skills || {
           technical: [],
           soft: [],
@@ -182,6 +198,7 @@ export default function ResumeBuilderPage() {
         title: resumeData.title,
         work_experience: resumeData.experience,
         education: resumeData.education,
+        certifications: resumeData.certifications,
         skills: resumeData.skills,
         additional_sections: {
           personal_info: resumeData.personal_info,
@@ -269,6 +286,34 @@ export default function ResumeBuilderPage() {
     const updated = [...resumeData.education]
     updated[index] = { ...updated[index], [field]: value }
     setResumeData({ ...resumeData, education: updated })
+  }
+
+  const addCertification = () => {
+    setResumeData({
+      ...resumeData,
+      certifications: [
+        ...resumeData.certifications,
+        {
+          name: "",
+          issuer: "",
+          date: "",
+          credential_id: "",
+        },
+      ],
+    })
+  }
+
+  const removeCertification = (index: number) => {
+    setResumeData({
+      ...resumeData,
+      certifications: resumeData.certifications.filter((_, i) => i !== index),
+    })
+  }
+
+  const updateCertification = (index: number, field: string, value: string) => {
+    const updated = [...resumeData.certifications]
+    updated[index] = { ...updated[index], [field]: value }
+    setResumeData({ ...resumeData, certifications: updated })
   }
 
   const addSkill = (type: "technical" | "soft", skill: string) => {
@@ -360,10 +405,12 @@ export default function ResumeBuilderPage() {
       const experienceData = sanitizedParsedData.work_experience || sanitizedParsedData.experience || []
       const educationData = sanitizedParsedData.education || []
       const skillsData = sanitizedParsedData.skills || { technical: [], soft: [] }
+      const certificationsData = sanitizedParsedData.certifications || []
 
       console.log("[v0] Experience data found:", experienceData)
       console.log("[v0] Education data found:", educationData)
       console.log("[v0] Skills data found:", skillsData)
+      console.log("[v0] Certifications data found:", certificationsData)
 
       // Merge parsed data with existing resume data
       setResumeData((prevData) => ({
@@ -376,6 +423,7 @@ export default function ResumeBuilderPage() {
         summary: sanitizedParsedData.summary || prevData.summary,
         experience: experienceData.length > 0 ? experienceData : prevData.experience,
         education: educationData.length > 0 ? educationData : prevData.education,
+        certifications: certificationsData.length > 0 ? certificationsData : prevData.certifications,
         skills: {
           technical: skillsData.technical?.length > 0 ? skillsData.technical : prevData.skills.technical,
           soft: skillsData.soft?.length > 0 ? skillsData.soft : prevData.skills.soft,
@@ -447,10 +495,11 @@ export default function ResumeBuilderPage() {
           {/* Form */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="basic" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="education">Education</TabsTrigger>
+                <TabsTrigger value="certifications">Certifications</TabsTrigger>
                 <TabsTrigger value="skills">Skills</TabsTrigger>
               </TabsList>
 
@@ -779,6 +828,78 @@ export default function ResumeBuilderPage() {
                 ))}
               </TabsContent>
 
+              <TabsContent value="certifications">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Certifications</h3>
+                    <p className="text-sm text-slate-600">Add your professional certifications and licenses</p>
+                  </div>
+                  <Button onClick={addCertification} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Certification
+                  </Button>
+                </div>
+
+                {resumeData.certifications.map((cert, index) => (
+                  <Card key={index}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">Certification {index + 1}</CardTitle>
+                        {resumeData.certifications.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeCertification(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Certification Name</Label>
+                          <Input
+                            placeholder="e.g., AWS Certified Solutions Architect"
+                            value={cert.name}
+                            onChange={(e) => updateCertification(index, "name", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Issuing Organization</Label>
+                          <Input
+                            placeholder="e.g., Amazon Web Services"
+                            value={cert.issuer}
+                            onChange={(e) => updateCertification(index, "issuer", e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Date Obtained</Label>
+                          <Input
+                            placeholder="e.g., March 2023"
+                            value={cert.date}
+                            onChange={(e) => updateCertification(index, "date", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Credential ID (optional)</Label>
+                          <Input
+                            placeholder="e.g., ABC123DEF456"
+                            value={cert.credential_id}
+                            onChange={(e) => updateCertification(index, "credential_id", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+
               <TabsContent value="skills">
                 <div className="space-y-6">
                   <Card>
@@ -935,6 +1056,21 @@ export default function ResumeBuilderPage() {
                           <p className="text-xs text-slate-600">{edu.school}</p>
                           <p className="text-xs text-slate-500">
                             {edu.graduation_date} {edu.gpa && `| GPA: ${edu.gpa}`}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {resumeData.certifications.some((cert) => cert.name || cert.issuer) && (
+                    <div>
+                      <h4 className="font-semibold text-xs mb-1">CERTIFICATIONS</h4>
+                      {resumeData.certifications.map((cert, index) => (
+                        <div key={index} className="mb-2">
+                          <p className="font-medium text-xs">{cert.name}</p>
+                          <p className="text-xs text-slate-600">{cert.issuer}</p>
+                          <p className="text-xs text-slate-500">
+                            {cert.date} {cert.credential_id && `| ID: ${cert.credential_id}`}
                           </p>
                         </div>
                       ))}

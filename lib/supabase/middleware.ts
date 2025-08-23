@@ -49,6 +49,68 @@ export async function updateSession(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
+    if (request.nextUrl.pathname.startsWith("/admin")) {
+      console.log("[v0] Admin route accessed by user:", user?.id)
+
+      if (!user) {
+        console.log("[v0] No user found, redirecting to login")
+        const url = request.nextUrl.clone()
+        url.pathname = "/auth/login"
+        return NextResponse.redirect(url)
+      }
+
+      console.log("[v0] Checking admin status for user:", user.id)
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("is_admin, is_banned")
+          .eq("id", user.id)
+          .single()
+
+        console.log("[v0] Profile query result:", { profile, error })
+
+        if (error) {
+          console.error("[v0] Error fetching profile:", error)
+          // If columns don't exist, redirect to dashboard with error info
+          const url = request.nextUrl.clone()
+          url.pathname = "/dashboard"
+          url.searchParams.set("error", "admin_setup_required")
+          return NextResponse.redirect(url)
+        }
+
+        if (profile?.is_banned) {
+          console.log("[v0] User is banned, redirecting")
+          const url = request.nextUrl.clone()
+          url.pathname = "/auth/banned"
+          return NextResponse.redirect(url)
+        }
+
+        if (!profile?.is_admin) {
+          console.log("[v0] User is not admin, redirecting to dashboard")
+          const url = request.nextUrl.clone()
+          url.pathname = "/dashboard"
+          return NextResponse.redirect(url)
+        }
+
+        console.log("[v0] User is admin, allowing access")
+      } catch (err) {
+        console.error("[v0] Exception in admin check:", err)
+        const url = request.nextUrl.clone()
+        url.pathname = "/dashboard"
+        return NextResponse.redirect(url)
+      }
+    }
+
+    if (user && !request.nextUrl.pathname.startsWith("/auth")) {
+      const { data: profile } = await supabase.from("profiles").select("is_banned").eq("id", user.id).single()
+
+      if (profile?.is_banned && !request.nextUrl.pathname.startsWith("/auth/banned")) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/auth/banned"
+        return NextResponse.redirect(url)
+      }
+    }
+
     if (
       request.nextUrl.pathname !== "/" &&
       !user &&

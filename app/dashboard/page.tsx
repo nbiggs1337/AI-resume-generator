@@ -353,7 +353,7 @@ export default async function DashboardPage() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Link href={`/customize/${customization.resume_id}/${customization.job_posting_id}`}>
+                          <Link href={`/customize/${customization.base_resume_id}/${customization.job_posting_id}`}>
                             <Button variant="outline" size="sm">
                               View Details
                             </Button>
