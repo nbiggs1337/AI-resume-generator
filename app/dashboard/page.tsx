@@ -86,9 +86,11 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">Welcome, {profile?.full_name || user.email}</span>
-            <Button variant="ghost" size="sm" className="glass-button border-0">
-              <Settings className="h-4 w-4" />
-            </Button>
+            <Link href="/profile">
+              <Button variant="ghost" size="sm" className="glass-button border-0">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <form action="/auth/signout" method="post">
               <Button variant="ghost" size="sm" type="submit" className="glass-button border-0">
                 <LogOut className="h-4 w-4" />
