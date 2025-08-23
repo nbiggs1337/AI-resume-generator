@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Zap, Infinity, Copy, CheckCircle } from "lucide-react"
+import { Crown, Zap, Infinity, Copy, CheckCircle, CreditCard, Loader2 } from "lucide-react"
 
 interface PaywallModalProps {
   isOpen: boolean
@@ -18,6 +18,7 @@ interface PaywallModalProps {
 
 export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }: PaywallModalProps) {
   const [copied, setCopied] = useState(false)
+  const [stripeLoading, setStripeLoading] = useState(false)
   const bitcoinAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
   const progressPercentage = (currentCount / limit) * 100
 
@@ -31,9 +32,38 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
     }
   }
 
+  const handleStripeCheckout = async () => {
+    try {
+      setStripeLoading(true)
+      console.log("[v0] Starting Stripe checkout process")
+
+      const response = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session")
+      }
+
+      const { url } = await response.json()
+      console.log("[v0] Redirecting to Stripe checkout:", url)
+
+      // Redirect to Stripe checkout
+      window.location.href = url
+    } catch (error) {
+      console.error("[v0] Stripe checkout error:", error)
+      alert("Failed to start checkout process. Please try again.")
+    } finally {
+      setStripeLoading(false)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/30 max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 bg-white/95 backdrop-blur-xl shadow-2xl">
+      <DialogContent className="glass-card border-white/30 max-w-5xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 bg-white/95 backdrop-blur-xl shadow-2xl">
         <div className="relative">
           <div className="bg-gradient-to-r from-red-50 to-orange-50 p-8 text-center border-b border-white/30">
             <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -119,40 +149,91 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
               </Card>
             </div>
 
-            <Card className="bg-orange-50 border-orange-200 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl font-serif flex items-center gap-3 text-gray-900">
-                  <div className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-orange-800">₿</span>
-                  </div>
-                  Bitcoin Payment Required
-                </CardTitle>
-                <CardDescription className="text-gray-700">Send Bitcoin to unlock full access</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-base font-semibold text-gray-900">Bitcoin Address:</span>
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">Choose Your Payment Method</h3>
+                <p className="text-gray-600">Select the payment option that works best for you</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Stripe Payment */}
+                <Card className="bg-blue-50 border-blue-200 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-serif flex items-center gap-3 text-gray-900">
+                      <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
+                        <CreditCard className="h-4 w-4 text-blue-800" />
+                      </div>
+                      Credit Card Payment
+                    </CardTitle>
+                    <CardDescription className="text-gray-700">Quick and secure checkout with Stripe</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-white border border-blue-200 rounded-lg p-4 text-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-1">$25</div>
+                      <div className="text-sm text-gray-600">One-time payment</div>
+                    </div>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(bitcoinAddress)}
-                      className="bg-white border-gray-300 hover:bg-gray-50"
+                      onClick={handleStripeCheckout}
+                      disabled={stripeLoading}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-base"
                     >
-                      {copied ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                      {stripeLoading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Pay with Card
+                        </>
+                      )}
                     </Button>
-                  </div>
-                  <code className="text-sm font-mono break-all text-gray-800 bg-gray-100 p-2 rounded block">
-                    {bitcoinAddress}
-                  </code>
-                </div>
-                <div className="text-base text-gray-700 space-y-2">
-                  <p>• Send any amount of Bitcoin to the address above</p>
-                  <p>• Your account will be upgraded automatically after confirmation</p>
-                  <p>• Contact admin if you need assistance</p>
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>• Instant activation</p>
+                      <p>• Secure payment processing</p>
+                      <p>• All major cards accepted</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Bitcoin Payment */}
+                <Card className="bg-orange-50 border-orange-200 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-serif flex items-center gap-3 text-gray-900">
+                      <div className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-bold text-orange-800">₿</span>
+                      </div>
+                      Bitcoin Payment
+                    </CardTitle>
+                    <CardDescription className="text-gray-700">Send Bitcoin to unlock full access</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-white border border-orange-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-semibold text-gray-900">Bitcoin Address:</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(bitcoinAddress)}
+                          className="bg-white border-gray-300 hover:bg-gray-50"
+                        >
+                          {copied ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <code className="text-xs font-mono break-all text-gray-800 bg-gray-100 p-2 rounded block">
+                        {bitcoinAddress}
+                      </code>
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>• Send any amount of Bitcoin</p>
+                      <p>• Automatic upgrade after confirmation</p>
+                      <p>• Usually takes 10-60 minutes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
 
           <div className="p-8 border-t border-white/30 flex gap-4 bg-white/90">
@@ -171,7 +252,7 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
               className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-lg py-3 text-base"
             >
               <Crown className="h-5 w-5 mr-2" />
-              Upgrade Now
+              View All Options
             </Button>
           </div>
         </div>
