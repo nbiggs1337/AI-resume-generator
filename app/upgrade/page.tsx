@@ -21,7 +21,7 @@ export default function UpgradePage() {
   const [upgradeSuccess, setUpgradeSuccess] = useState(false)
   const { limitData, refreshLimit } = useResumeLimit(user?.id)
 
-  const bitcoinAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+  const bitcoinAddress = "17DDpguvKa6RdXH8QZYVmAvTMtwxsWJtW6"
 
   const handleStripeUpgrade = async (sessionId: string, userId: string) => {
     try {

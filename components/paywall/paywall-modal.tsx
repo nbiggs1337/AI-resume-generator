@@ -19,7 +19,7 @@ interface PaywallModalProps {
 export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }: PaywallModalProps) {
   const [copied, setCopied] = useState(false)
   const [stripeLoading, setStripeLoading] = useState(false)
-  const bitcoinAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+  const bitcoinAddress = "17DDpguvKa6RdXH8QZYVmAvTMtwxsWJtW6"
   const progressPercentage = (currentCount / limit) * 100
 
   const copyToClipboard = async (text: string) => {
