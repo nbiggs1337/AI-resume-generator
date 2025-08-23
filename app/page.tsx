@@ -43,7 +43,7 @@ export default async function HomePage() {
             "@type": "WebPage",
             name: "Free AI Resume Builder - ResumeAI",
             description: "Create professional, ATS-friendly resumes with AI-powered optimization",
-            url: "https://freeresumeai.vercel.app/",
+            url: "https://freeresumeai.app/",
             mainEntity: {
               "@type": "SoftwareApplication",
               name: "ResumeAI",
