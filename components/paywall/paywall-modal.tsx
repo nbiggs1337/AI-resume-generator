@@ -33,122 +33,120 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-white/20 max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="glass-card border-white/30 max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 bg-white/95 backdrop-blur-xl shadow-2xl">
         <div className="relative">
-          {/* Header with gradient background */}
-          <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-8 text-center">
-            <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4 glass">
-              <Crown className="h-8 w-8 text-primary" />
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 p-8 text-center border-b border-white/30">
+            <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Crown className="h-10 w-10 text-red-600" />
             </div>
             <DialogHeader>
-              <DialogTitle className="text-3xl font-serif font-bold text-foreground mb-2">
+              <DialogTitle className="text-4xl font-serif font-bold text-gray-900 mb-3">
                 Unlock Unlimited Resumes
               </DialogTitle>
-              <DialogDescription className="text-lg text-muted-foreground">
+              <DialogDescription className="text-xl text-gray-700 max-w-2xl mx-auto">
                 You've reached your free resume limit. Upgrade to create unlimited professional resumes.
               </DialogDescription>
             </DialogHeader>
           </div>
 
-          {/* Usage indicator */}
-          <div className="p-6 border-b border-white/20">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-foreground">Current Usage</span>
-              <Badge variant="secondary" className="glass border-white/20">
+          <div className="p-8 border-b border-white/30 bg-white/80">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-lg font-semibold text-gray-900">Current Usage</span>
+              <Badge variant="secondary" className="bg-red-100 text-red-800 border-red-200 px-4 py-2 text-base">
                 {currentCount}/{limit} resumes
               </Badge>
             </div>
-            <Progress value={progressPercentage} className="h-3 glass" />
-            <p className="text-xs text-muted-foreground mt-2">
+            <Progress value={progressPercentage} className="h-4 bg-gray-200" />
+            <p className="text-sm text-gray-600 mt-3">
               You've created {currentCount} out of {limit} free resumes
             </p>
           </div>
 
-          {/* Features comparison */}
-          <div className="p-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="p-8 space-y-8 bg-white/80">
+            <div className="grid md:grid-cols-2 gap-8">
               {/* Free Plan */}
-              <Card className="glass-card border-white/20 relative">
-                <CardHeader>
-                  <CardTitle className="text-lg font-serif">Free Plan</CardTitle>
-                  <CardDescription>What you have now</CardDescription>
+              <Card className="bg-white/90 border-gray-200 shadow-lg">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-serif text-gray-900">Free Plan</CardTitle>
+                  <CardDescription className="text-gray-600">What you have now</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-muted rounded-full"></div>
-                    <span>{limit} resume limit</span>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">{limit} resume limit</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-muted rounded-full"></div>
-                    <span>Basic templates</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">Basic templates</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-muted rounded-full"></div>
-                    <span>PDF export</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">PDF export</span>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Premium Plan */}
-              <Card className="glass-card border-primary/30 relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium">
+              <Card className="bg-white/90 border-red-200 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-red-600 text-white px-4 py-2 text-sm font-semibold">
                   UPGRADE
                 </div>
-                <CardHeader>
-                  <CardTitle className="text-lg font-serif flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-serif flex items-center gap-3 text-gray-900">
+                    <Zap className="h-6 w-6 text-red-600" />
                     Full Access
                   </CardTitle>
-                  <CardDescription>Everything you need</CardDescription>
+                  <CardDescription className="text-gray-600">Everything you need</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Infinity className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Unlimited resumes</span>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3 text-base">
+                    <Infinity className="w-5 h-5 text-red-600" />
+                    <span className="font-semibold text-gray-900">Unlimited resumes</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span>Premium templates</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span className="text-gray-700">Premium templates</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span>AI optimization</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span className="text-gray-700">AI optimization</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span>Priority support</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span className="text-gray-700">Priority support</span>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Bitcoin payment section */}
-            <Card className="glass-card border-accent/30 bg-accent/5">
+            <Card className="bg-orange-50 border-orange-200 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-lg font-serif flex items-center gap-2">
-                  <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-accent">₿</span>
+                <CardTitle className="text-xl font-serif flex items-center gap-3 text-gray-900">
+                  <div className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-orange-800">₿</span>
                   </div>
                   Bitcoin Payment Required
                 </CardTitle>
-                <CardDescription>Send Bitcoin to unlock full access</CardDescription>
+                <CardDescription className="text-gray-700">Send Bitcoin to unlock full access</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="glass-card p-4 bg-white/60">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-foreground">Bitcoin Address:</span>
+              <CardContent className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-base font-semibold text-gray-900">Bitcoin Address:</span>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(bitcoinAddress)}
-                      className="glass-button h-8 px-2"
+                      className="bg-white border-gray-300 hover:bg-gray-50"
                     >
-                      {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      {copied ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <code className="text-xs font-mono break-all text-muted-foreground">{bitcoinAddress}</code>
+                  <code className="text-sm font-mono break-all text-gray-800 bg-gray-100 p-2 rounded block">
+                    {bitcoinAddress}
+                  </code>
                 </div>
-                <div className="text-sm text-muted-foreground space-y-1">
+                <div className="text-base text-gray-700 space-y-2">
                   <p>• Send any amount of Bitcoin to the address above</p>
                   <p>• Your account will be upgraded automatically after confirmation</p>
                   <p>• Contact admin if you need assistance</p>
@@ -157,9 +155,12 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
             </Card>
           </div>
 
-          {/* Action buttons */}
-          <div className="p-6 border-t border-white/20 flex gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1 glass-button bg-transparent border-white/30">
+          <div className="p-8 border-t border-white/30 flex gap-4 bg-white/90">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 bg-white border-gray-300 hover:bg-gray-50 text-gray-700 py-3 text-base"
+            >
               Maybe Later
             </Button>
             <Button
@@ -167,9 +168,9 @@ export function PaywallModal({ isOpen, onClose, currentCount, limit, onUpgrade }
                 onUpgrade?.()
                 onClose()
               }}
-              className="flex-1 bg-primary hover:bg-primary/90 shadow-lg depth-2"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-lg py-3 text-base"
             >
-              <Crown className="h-4 w-4 mr-2" />
+              <Crown className="h-5 w-5 mr-2" />
               Upgrade Now
             </Button>
           </div>

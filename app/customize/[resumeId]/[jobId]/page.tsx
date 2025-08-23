@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckCircle, Circle, Loader2, ArrowLeft, Sparkles, AlertTriangle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { PaywallModal } from "@/components/paywall/paywall-modal"
+import { useResumeLimit } from "@/hooks/use-resume-limit"
 import type { OptimizationResult } from "@/lib/ai/resume-optimizer"
 
 const isValidUUID = (str: string) => {
@@ -27,6 +29,8 @@ export default function CustomizeResumePage() {
   const [jobPosting, setJobPosting] = useState<any>(null)
   const [customizationId, setCustomizationId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showPaywall, setShowPaywall] = useState(false)
+  const { accountType, resumeCount, resumeLimit, refreshLimits } = useResumeLimit()
 
   const supabase = createClient()
 
@@ -169,10 +173,18 @@ export default function CustomizeResumePage() {
       if (data.success) {
         router.push(`/dashboard?success=Resume customized successfully`)
       } else {
-        console.error("Failed to apply suggestions:", data.error)
+        if (data.error && data.error.includes("Resume limit reached")) {
+          console.log("Failed to apply suggestions:", data.error)
+          setShowPaywall(true)
+          refreshLimits()
+        } else {
+          console.error("Failed to apply suggestions:", data.error)
+          setError(`Failed to apply suggestions: ${data.error}`)
+        }
       }
     } catch (error) {
       console.error("Error applying suggestions:", error)
+      setError("Failed to apply suggestions")
     } finally {
       setApplying(false)
     }
@@ -217,6 +229,13 @@ export default function CustomizeResumePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <PaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        currentCount={resumeCount}
+        limit={resumeLimit}
+      />
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => router.back()} className="mb-4">

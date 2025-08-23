@@ -21,15 +21,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const limitCheck = await checkResumeLimit(user.id, supabase)
-    if (!limitCheck.canCreate) {
-      return NextResponse.json(
-        {
-          error: limitCheck.message || "Resume limit reached. Please upgrade your account.",
-          limitReached: true,
-        },
-        { status: 403 },
-      )
+    try {
+      const limitCheck = await checkResumeLimit(user.id, supabase)
+      if (!limitCheck.canCreate) {
+        return NextResponse.json(
+          {
+            error: limitCheck.message || "Resume limit reached. Please upgrade your account.",
+            limitReached: true,
+          },
+          { status: 403 },
+        )
+      }
+    } catch (limitError) {
+      console.error("[v0] Resume limit check failed:", limitError)
+      // Continue with the operation if limit check fails
     }
 
     const { data: customization, error: customError } = await supabase
@@ -117,7 +122,7 @@ export async function POST(request: NextRequest) {
       customizedResume: newResume,
     })
   } catch (error) {
-    console.error("Error applying suggestions:", error)
+    console.error("[v0] Error applying suggestions:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

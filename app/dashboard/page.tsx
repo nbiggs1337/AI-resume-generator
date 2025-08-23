@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
+import DashboardClient from "@/components/dashboard-client"
 import {
   Plus,
   FileText,
@@ -66,8 +67,17 @@ export default async function DashboardPage() {
   const recentCustomizations =
     customizations?.filter((c) => new Date(c.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length || 0
 
+  const isAtLimit = profile?.account_type === "limited" && totalResumes >= (profile?.resume_limit || 10)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
+      <DashboardClient
+        isAtLimit={isAtLimit}
+        currentCount={totalResumes}
+        limit={profile?.resume_limit || 10}
+        accountType={profile?.account_type || "limited"}
+      />
+
       <header className="glass border-b border-white/20 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">

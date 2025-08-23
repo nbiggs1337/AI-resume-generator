@@ -13,24 +13,19 @@ export async function checkResumeLimit(userId: string, supabaseClient?: Supabase
   const supabase = supabaseClient || createClient()
 
   try {
-    let profile: any = null
-    let accountType: "limited" | "full" = "limited"
-    let limit = 1
+    let accountType: "limited" | "full" = "full" // Default to full access
+    let limit: number | null = null
 
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("account_type, resume_limit")
-        .eq("id", userId)
-        .single()
+    // Try to fetch account type, but gracefully handle missing columns
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("account_type, resume_limit")
+      .eq("id", userId)
+      .single()
 
-      if (data && !error) {
-        profile = data
-        accountType = data.account_type as "limited" | "full"
-        limit = data.resume_limit || 10
-      }
-    } catch (columnError) {
-      console.log("Account type columns not found, defaulting to full access")
+    if (profileError) {
+      console.log("[v0] Profile query error (likely missing columns):", profileError.message)
+      // If columns don't exist, default to full access
       return {
         canCreate: true,
         currentCount: 0,
@@ -40,15 +35,43 @@ export async function checkResumeLimit(userId: string, supabaseClient?: Supabase
       }
     }
 
-    // Get current resume count
-    const { data: resumes, error: resumeError } = await supabase
+    if (profileData) {
+      accountType = profileData.account_type as "limited" | "full"
+      limit = profileData.resume_limit || 10
+    }
+
+    let resumes
+    let resumeError
+
+    // First try with deleted_at filter (for soft deletes)
+    const { data: resumesWithDeleted, error: deletedError } = await supabase
       .from("resumes")
       .select("id")
       .eq("user_id", userId)
       .is("deleted_at", null)
 
+    if (deletedError && deletedError.message.includes("deleted_at")) {
+      // Column doesn't exist, query without deleted_at filter
+      console.log("[v0] deleted_at column doesn't exist, counting all resumes")
+      const { data: allResumes, error: allError } = await supabase.from("resumes").select("id").eq("user_id", userId)
+
+      resumes = allResumes
+      resumeError = allError
+    } else {
+      resumes = resumesWithDeleted
+      resumeError = deletedError
+    }
+
     if (resumeError) {
-      throw new Error("Could not fetch resume count")
+      console.error("[v0] Resume count error:", resumeError)
+      // Don't block user if we can't count resumes
+      return {
+        canCreate: true,
+        currentCount: 0,
+        limit: null,
+        accountType: "full",
+        message: "Could not verify resume count, access granted",
+      }
     }
 
     const currentCount = resumes?.length || 0
@@ -76,7 +99,7 @@ export async function checkResumeLimit(userId: string, supabaseClient?: Supabase
         : `Resume limit reached (${currentCount}/${limit}). Upgrade to create more resumes.`,
     }
   } catch (error) {
-    console.error("Error checking resume limit:", error)
+    console.error("[v0] Error checking resume limit:", error)
     return {
       canCreate: true,
       currentCount: 0,
