@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,15 +9,59 @@ import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Crown, Copy, CheckCircle, Infinity, Zap, Shield, Sparkles, Mail, Clock } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useResumeLimit } from "@/hooks/use-resume-limit"
+import { copyToClipboard } from "@/utils/copy-to-clipboard"
 
 export default function UpgradePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [upgrading, setUpgrading] = useState(false)
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false)
   const { limitData, refreshLimit } = useResumeLimit(user?.id)
 
   const bitcoinAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+
+  const handleStripeUpgrade = async (sessionId: string, userId: string) => {
+    try {
+      setUpgrading(true)
+      console.log("[v0] Processing Stripe upgrade for user:", userId)
+
+      const supabase = createClient()
+
+      const response = await fetch("/api/stripe/verify-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId, userId }),
+      })
+
+      if (response.ok) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            account_type: "full",
+            resume_limit: null,
+            upgraded_at: new Date().toISOString(),
+          })
+          .eq("id", userId)
+
+        if (!error) {
+          console.log("[v0] Account upgraded successfully")
+          setUpgradeSuccess(true)
+          await refreshLimit()
+        } else {
+          console.error("[v0] Error upgrading account:", error)
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Error processing upgrade:", error)
+    } finally {
+      setUpgrading(false)
+    }
+  }
 
   useEffect(() => {
     const getUser = async () => {
@@ -33,20 +77,19 @@ export default function UpgradePage() {
 
       setUser(user)
       setLoading(false)
+
+      const success = searchParams.get("success")
+      const sessionId = searchParams.get("session_id")
+      const userId = searchParams.get("user_id")
+
+      if (success === "true" && sessionId && userId === user.id) {
+        console.log("[v0] Stripe payment success detected, upgrading account")
+        handleStripeUpgrade(sessionId, userId)
+      }
     }
 
     getUser()
-  }, [router])
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy: ", err)
-    }
-  }
+  }, [router, searchParams])
 
   if (loading) {
     return (
@@ -59,24 +102,40 @@ export default function UpgradePage() {
     )
   }
 
-  if (limitData?.accountType === "full") {
+  if (upgrading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center glass-card p-8 max-w-md">
+          <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4 glass">
+            <Crown className="h-8 w-8 text-primary animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-foreground mb-4">Processing Your Upgrade</h2>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">
+            Your payment was successful! We're upgrading your account to full access...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (upgradeSuccess || limitData?.accountType === "full") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
         <div className="container mx-auto px-4 py-8">
-          <Button variant="ghost" onClick={() => router.back()} className="mb-6 glass-button border-0">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-
           <div className="max-w-2xl mx-auto text-center">
             <Card className="glass-card border-primary/30 bg-primary/5">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4 glass">
                   <Crown className="h-8 w-8 text-primary" />
                 </div>
-                <h1 className="text-3xl font-serif font-bold text-foreground mb-4">You're Already Upgraded!</h1>
+                <h1 className="text-3xl font-serif font-bold text-foreground mb-4">
+                  {upgradeSuccess ? "Upgrade Complete!" : "You're Already Upgraded!"}
+                </h1>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Your account has full access with unlimited resume creation.
+                  {upgradeSuccess
+                    ? "Thank you for your payment! Your account now has full access with unlimited resume creation."
+                    : "Your account has full access with unlimited resume creation."}
                 </p>
                 <Button onClick={() => router.push("/dashboard")} className="bg-primary hover:bg-primary/90 shadow-lg">
                   Go to Dashboard
@@ -100,7 +159,6 @@ export default function UpgradePage() {
         </Button>
 
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 glass">
               <Crown className="h-10 w-10 text-primary" />
@@ -111,7 +169,6 @@ export default function UpgradePage() {
             </p>
           </div>
 
-          {/* Current Usage */}
           {limitData && (
             <Card className="glass-card border-white/20 mb-8">
               <CardHeader>
@@ -134,7 +191,6 @@ export default function UpgradePage() {
           )}
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Payment Instructions */}
             <div className="space-y-6">
               <Card className="glass-card border-accent/30 bg-accent/5">
                 <CardHeader>
@@ -149,7 +205,6 @@ export default function UpgradePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Bitcoin Address */}
                   <div className="glass-card p-4 bg-white/60">
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-medium text-foreground">Bitcoin Address:</span>
@@ -168,7 +223,6 @@ export default function UpgradePage() {
                     </code>
                   </div>
 
-                  {/* Payment Steps */}
                   <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">How to Pay:</h3>
                     <div className="space-y-3">
@@ -188,7 +242,6 @@ export default function UpgradePage() {
                     </div>
                   </div>
 
-                  {/* Important Notes */}
                   <div className="glass-card p-4 bg-accent/10 border-accent/20">
                     <div className="flex items-start gap-3">
                       <Clock className="h-5 w-5 text-accent mt-0.5 shrink-0" />
@@ -206,7 +259,6 @@ export default function UpgradePage() {
                 </CardContent>
               </Card>
 
-              {/* Support */}
               <Card className="glass-card border-white/20">
                 <CardHeader>
                   <CardTitle className="text-lg font-serif flex items-center gap-2">
@@ -226,7 +278,6 @@ export default function UpgradePage() {
               </Card>
             </div>
 
-            {/* Features Comparison */}
             <div className="space-y-6">
               <Card className="glass-card border-white/20">
                 <CardHeader>
@@ -234,7 +285,6 @@ export default function UpgradePage() {
                   <CardDescription>Compare your current plan with full access</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Current Plan */}
                   <div className="glass-card p-4 bg-muted/20 border-muted/30">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-8 h-8 bg-muted/40 rounded-xl flex items-center justify-center">
@@ -261,7 +311,6 @@ export default function UpgradePage() {
                     </ul>
                   </div>
 
-                  {/* Full Access Plan */}
                   <div className="glass-card p-4 bg-primary/5 border-primary/30 relative overflow-hidden">
                     <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-lg">
                       UPGRADE
@@ -297,7 +346,6 @@ export default function UpgradePage() {
                 </CardContent>
               </Card>
 
-              {/* FAQ */}
               <Card className="glass-card border-white/20">
                 <CardHeader>
                   <CardTitle className="text-lg font-serif">Frequently Asked Questions</CardTitle>

@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${request.nextUrl.origin}/api/stripe/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${request.nextUrl.origin}/upgrade?success=true&session_id={CHECKOUT_SESSION_ID}&user_id=${user.id}`,
       cancel_url: `${request.nextUrl.origin}/upgrade?canceled=true`,
       metadata: {
         supabase_user_id: user.id,
