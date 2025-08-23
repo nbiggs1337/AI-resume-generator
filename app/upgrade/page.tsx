@@ -148,7 +148,7 @@ export default function UpgradePage() {
     )
   }
 
-  const progressPercentage = limitData ? (limitData.currentCount / (limitData.limit || 10)) * 100 : 0
+  const progressPercentage = limitData ? (limitData.currentCount / (limitData.limit || 5)) * 100 : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
@@ -302,7 +302,7 @@ export default function UpgradePage() {
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-muted rounded-full"></div>
-                        {limitData?.limit || 10} resume limit
+                        {limitData?.limit || 5} resume limit
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-muted rounded-full"></div>

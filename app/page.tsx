@@ -106,7 +106,7 @@ export default async function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <p className="text-white/80 text-sm">10 free resumes • No credit card required</p>
+              <p className="text-white/80 text-sm">5 free resumes • No credit card required</p>
             </div>
           </div>
         </section>
@@ -195,7 +195,7 @@ export default async function HomePage() {
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>10 AI-optimized resumes</span>
+                    <span>5 AI-optimized resumes</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-green-500" />

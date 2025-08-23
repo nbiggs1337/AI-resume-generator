@@ -2,10 +2,10 @@ import { requireAdmin } from "@/lib/auth/admin"
 import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireAdmin()
-    const { id } = await params
+    const { id } = params
     const { action, reason } = await request.json()
 
     const supabase = await createClient()
@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       case "downgrade_account":
         updateData = {
           account_type: "limited",
-          resume_limit: 10,
+          resume_limit: 5,
           upgraded_at: null,
         }
         break

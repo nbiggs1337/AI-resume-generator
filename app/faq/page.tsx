@@ -16,7 +16,7 @@ const faqs = [
       {
         question: "Is FreeResumeAI really free?",
         answer:
-          "Yes! Free users can create up to 10 AI-optimized resumes with our Harvard template. Premium users get unlimited resumes and access to 5 professional templates including Executive, Creative, Academic, and Tech styles.",
+          "Yes! Free users can create up to 5 AI-optimized resumes with our Harvard template. Premium users get unlimited resumes and access to 5 professional templates including Executive, Creative, Academic, and Tech styles.",
       },
       {
         question: "What makes this different from other resume builders?",
@@ -61,7 +61,7 @@ const faqs = [
       {
         question: "Can I upgrade my account later?",
         answer:
-          "Yes! You can upgrade to premium at any time from your dashboard or when you hit the 10-resume limit. Your existing resumes will remain accessible.",
+          "Yes! You can upgrade to premium at any time from your dashboard or when you hit the 5-resume limit. Your existing resumes will remain accessible.",
       },
     ],
   },

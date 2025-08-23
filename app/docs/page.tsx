@@ -180,7 +180,7 @@ const steps = [
         step: "Managing Multiple Resumes",
         description: "Create targeted resumes for different opportunities.",
         details: [
-          "Free users can create up to 10 resumes",
+          "Free users can create up to 5 resumes",
           "Premium users get unlimited resume creation",
           "Name your resumes descriptively (e.g., 'Marketing Manager Resume')",
           "Customize each resume for specific job types or industries",

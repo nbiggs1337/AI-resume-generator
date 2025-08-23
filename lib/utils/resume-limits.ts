@@ -37,7 +37,7 @@ export async function checkResumeLimit(userId: string, supabaseClient?: Supabase
 
     if (profileData) {
       accountType = profileData.account_type as "limited" | "full"
-      limit = profileData.resume_limit || 10
+      limit = profileData.resume_limit || 5
     }
 
     let resumes
