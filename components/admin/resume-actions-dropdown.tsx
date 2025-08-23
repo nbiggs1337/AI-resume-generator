@@ -65,11 +65,11 @@ export function ResumeActionsDropdown({ resume }: ResumeActionsDropdownProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="glass-button border-0">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="glass-card border-white/20">
           <DropdownMenuItem asChild>
             <Link href={`/resume/${resume.id}`}>
               <Eye className="h-4 w-4 mr-2" />
@@ -90,18 +90,22 @@ export function ResumeActionsDropdown({ resume }: ResumeActionsDropdownProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Delete Resume Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="glass-card border-white/20">
           <DialogHeader>
-            <DialogTitle>Delete Resume</DialogTitle>
+            <DialogTitle className="text-xl font-serif">Delete Resume</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete "{resume.title}"? This action cannot be undone and will permanently remove
               the resume from {resume.profiles?.full_name || resume.profiles?.email}'s account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isLoading}
+              className="glass-button border-white/30"
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>

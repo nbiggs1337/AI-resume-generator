@@ -88,7 +88,15 @@ Required JSON structure:
   "skills": {
     "technical": ["skill1", "skill2"],
     "soft": ["skill1", "skill2"]
-  }
+  },
+  "certifications": [
+    {
+      "name": "Certification name",
+      "issuer": "Issuing organization",
+      "date": "Date obtained",
+      "credential_id": "Credential ID if mentioned"
+    }
+  ]
 }
 
 Resume text:

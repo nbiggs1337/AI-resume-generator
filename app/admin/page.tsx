@@ -37,16 +37,15 @@ export default async function AdminDashboard() {
   ])
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
+      <header className="glass border-b border-white/20 sticky top-0 z-50">
         <div className="flex h-16 items-center justify-between px-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <h1 className="text-2xl font-serif font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground">Manage users and resumes</p>
           </div>
           <div className="flex items-center gap-4">
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="glass-button border-white/30 bg-transparent">
               <Link href="/dashboard">Back to App</Link>
             </Button>
           </div>
@@ -54,29 +53,28 @@ export default async function AdminDashboard() {
       </header>
 
       <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-sidebar-border bg-sidebar">
+        <aside className="w-64 glass border-r border-white/20">
           <nav className="p-4 space-y-2">
             <div className="px-3 py-2">
-              <h2 className="text-lg font-semibold text-sidebar-foreground">Navigation</h2>
+              <h2 className="text-lg font-serif font-semibold text-foreground">Navigation</h2>
             </div>
             <Link
               href="/admin"
-              className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent text-sidebar-accent-foreground"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-primary-foreground shadow-lg"
             >
               <Activity className="h-4 w-4" />
               Dashboard
             </Link>
             <Link
               href="/admin/users"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground hover:bg-primary/10 transition-all duration-200 glass-hover"
             >
               <Users className="h-4 w-4" />
               User Management
             </Link>
             <Link
               href="/admin/resumes"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground hover:bg-primary/10 transition-all duration-200 glass-hover"
             >
               <FileText className="h-4 w-4" />
               Resume Management
@@ -84,71 +82,80 @@ export default async function AdminDashboard() {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-6">
-          {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
+            <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-card-foreground">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-foreground">Total Users</CardTitle>
+                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center glass">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-card-foreground">{totalUsers || 0}</div>
+                <div className="text-3xl font-bold text-foreground">{totalUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">Registered accounts</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-card-foreground">Total Resumes</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-foreground">Total Resumes</CardTitle>
+                <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center glass">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-card-foreground">{totalResumes || 0}</div>
+                <div className="text-3xl font-bold text-foreground">{totalResumes || 0}</div>
                 <p className="text-xs text-muted-foreground">Created resumes</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-card-foreground">Active Users</CardTitle>
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-foreground">Active Users</CardTitle>
+                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center glass">
+                  <UserCheck className="h-5 w-5 text-green-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-card-foreground">{activeUsers || 0}</div>
+                <div className="text-3xl font-bold text-foreground">{activeUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">Non-banned users</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-card-foreground">Banned Users</CardTitle>
-                <UserX className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-foreground">Banned Users</CardTitle>
+                <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center glass">
+                  <UserX className="h-5 w-5 text-red-600" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">{bannedUsers || 0}</div>
+                <div className="text-3xl font-bold text-destructive">{bannedUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">Suspended accounts</p>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Users */}
-            <Card>
+            <Card className="glass-card border-white/20">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Recent Users</CardTitle>
+                <CardTitle className="text-xl font-serif text-foreground">Recent Users</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentUsers?.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between">
+                    <div key={user.id} className="flex items-center justify-between p-3 glass rounded-lg">
                       <div>
-                        <p className="font-medium text-card-foreground">{user.full_name || "No name"}</p>
+                        <p className="font-medium text-foreground">{user.full_name || "No name"}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {user.is_admin && <Badge variant="secondary">Admin</Badge>}
+                        {user.is_admin && (
+                          <Badge variant="secondary" className="glass border-white/20">
+                            Admin
+                          </Badge>
+                        )}
                         {user.is_banned && <Badge variant="destructive">Banned</Badge>}
                         <p className="text-xs text-muted-foreground">
                           {new Date(user.created_at).toLocaleDateString()}
@@ -158,24 +165,23 @@ export default async function AdminDashboard() {
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Button asChild variant="outline" className="w-full bg-transparent">
+                  <Button asChild variant="outline" className="w-full glass-button border-white/30 bg-transparent">
                     <Link href="/admin/users">View All Users</Link>
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Recent Resumes */}
-            <Card>
+            <Card className="glass-card border-white/20">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Recent Resumes</CardTitle>
+                <CardTitle className="text-xl font-serif text-foreground">Recent Resumes</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentResumes?.map((resume) => (
-                    <div key={resume.id} className="flex items-center justify-between">
+                    <div key={resume.id} className="flex items-center justify-between p-3 glass rounded-lg">
                       <div>
-                        <p className="font-medium text-card-foreground">{resume.title}</p>
+                        <p className="font-medium text-foreground">{resume.title}</p>
                         <p className="text-sm text-muted-foreground">
                           by {resume.profiles?.full_name || resume.profiles?.email || "Unknown"}
                         </p>
@@ -187,7 +193,7 @@ export default async function AdminDashboard() {
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Button asChild variant="outline" className="w-full bg-transparent">
+                  <Button asChild variant="outline" className="w-full glass-button border-white/30 bg-transparent">
                     <Link href="/admin/resumes">View All Resumes</Link>
                   </Button>
                 </div>

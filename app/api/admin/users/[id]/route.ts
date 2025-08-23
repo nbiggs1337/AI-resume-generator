@@ -37,6 +37,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           is_admin: false,
         }
         break
+      case "upgrade_account":
+        updateData = {
+          account_type: "full",
+          resume_limit: null,
+          upgraded_at: new Date().toISOString(),
+        }
+        break
+      case "downgrade_account":
+        updateData = {
+          account_type: "limited",
+          resume_limit: 10,
+          upgraded_at: null,
+        }
+        break
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Save, Plus, Trash2, CheckCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { checkResumeLimit } from "@/lib/utils/resume-limits"
 
 let unpdf: any = null
 
@@ -192,6 +193,15 @@ export default function ResumeBuilderPage() {
 
       if (!user) {
         throw new Error("You must be logged in to save a resume")
+      }
+
+      if (!editId) {
+        const limitCheck = await checkResumeLimit(user.id)
+        if (!limitCheck.canCreate) {
+          alert(limitCheck.message || "Resume limit reached. Please upgrade your account.")
+          setSaving(false)
+          return
+        }
       }
 
       const resumeRecord = {
@@ -446,38 +456,44 @@ export default function ResumeBuilderPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading resume builder...</p>
+      <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center glass-card p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading resume builder...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+        <div className="mb-8">
+          <Button variant="ghost" onClick={() => router.back()} className="mb-6 glass-button border-0">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">{editId ? "Edit Resume" : "Create New Resume"}</h1>
-              <p className="text-slate-600 mt-2">Build your professional resume step by step</p>
+              <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
+                {editId ? "Edit Resume" : "Create New Resume"}
+              </h1>
+              <p className="text-xl text-muted-foreground">Build your professional resume step by step</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {saveSuccess && (
-                <div className="flex items-center gap-2 text-green-600 text-sm">
+                <div className="flex items-center gap-2 text-green-600 text-sm glass-card px-3 py-2">
                   <CheckCircle className="h-4 w-4" />
                   Saved successfully!
                 </div>
               )}
-              <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-primary hover:bg-primary/90 shadow-lg depth-2"
+              >
                 {saving ? (
                   "Saving..."
                 ) : (
@@ -491,22 +507,46 @@ export default function ResumeBuilderPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Tabs defaultValue="basic" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="experience">Experience</TabsTrigger>
-                <TabsTrigger value="education">Education</TabsTrigger>
-                <TabsTrigger value="certifications">Certifications</TabsTrigger>
-                <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsList className="glass border-white/20 bg-white/40 p-1 grid w-full grid-cols-5">
+                <TabsTrigger
+                  value="basic"
+                  className="glass-button data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+                >
+                  Basic Info
+                </TabsTrigger>
+                <TabsTrigger
+                  value="experience"
+                  className="glass-button data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+                >
+                  Experience
+                </TabsTrigger>
+                <TabsTrigger
+                  value="education"
+                  className="glass-button data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+                >
+                  Education
+                </TabsTrigger>
+                <TabsTrigger
+                  value="certifications"
+                  className="glass-button data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+                >
+                  Certifications
+                </TabsTrigger>
+                <TabsTrigger
+                  value="skills"
+                  className="glass-button data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+                >
+                  Skills
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-6">
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardHeader>
-                    <CardTitle>Import from PDF</CardTitle>
+                    <CardTitle className="text-xl font-serif">Import from PDF</CardTitle>
                     <CardDescription>
                       Upload your existing resume PDF and let AI extract the information
                     </CardDescription>
@@ -519,31 +559,31 @@ export default function ResumeBuilderPage() {
                           accept=".pdf"
                           onChange={handlePdfUpload}
                           disabled={uploading}
-                          className="cursor-pointer"
+                          className="cursor-pointer glass border-white/30 bg-white/60"
                         />
                       </div>
                       {uploading && (
-                        <div className="flex items-center gap-2 text-blue-600 text-sm">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <div className="flex items-center gap-2 text-primary text-sm glass-card px-3 py-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                           Parsing PDF...
                         </div>
                       )}
                       {uploadSuccess && (
-                        <div className="flex items-center gap-2 text-green-600 text-sm">
+                        <div className="flex items-center gap-2 text-green-600 text-sm glass-card px-3 py-2">
                           <CheckCircle className="h-4 w-4" />
                           PDF parsed successfully!
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       Upload a PDF resume and AI will automatically extract and populate your information below.
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardHeader>
-                    <CardTitle>Resume Title</CardTitle>
+                    <CardTitle className="text-xl font-serif">Resume Title</CardTitle>
                     <CardDescription>Give your resume a descriptive name</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -551,13 +591,14 @@ export default function ResumeBuilderPage() {
                       placeholder="e.g., Software Engineer Resume"
                       value={resumeData.title}
                       onChange={(e) => setResumeData({ ...resumeData, title: e.target.value })}
+                      className="glass border-white/30 bg-white/60"
                     />
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
+                    <CardTitle className="text-xl font-serif">Personal Information</CardTitle>
                     <CardDescription>Your contact details and basic information</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -573,6 +614,7 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, full_name: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                       <div>
@@ -587,6 +629,7 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, email: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                     </div>
@@ -603,6 +646,7 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, phone: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                       <div>
@@ -616,6 +660,7 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, location: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                     </div>
@@ -632,6 +677,7 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, linkedin: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                       <div>
@@ -645,15 +691,16 @@ export default function ResumeBuilderPage() {
                               personal_info: { ...resumeData.personal_info, website: e.target.value },
                             })
                           }
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardHeader>
-                    <CardTitle>Professional Summary</CardTitle>
+                    <CardTitle className="text-xl font-serif">Professional Summary</CardTitle>
                     <CardDescription>A brief overview of your professional background</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -662,25 +709,26 @@ export default function ResumeBuilderPage() {
                       rows={4}
                       value={resumeData.summary}
                       onChange={(e) => setResumeData({ ...resumeData, summary: e.target.value })}
+                      className="glass border-white/30 bg-white/60"
                     />
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="experience" className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold">Work Experience</h3>
-                    <p className="text-sm text-slate-600">Add your professional experience</p>
+                    <p className="text-sm text-muted-foreground">Add your professional experience</p>
                   </div>
-                  <Button onClick={addExperience} variant="outline">
+                  <Button onClick={addExperience} variant="outline" className="glass-button bg-transparent shrink-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Experience
                   </Button>
                 </div>
 
                 {resumeData.experience.map((exp, index) => (
-                  <Card key={index}>
+                  <Card key={index} className="glass-card border-white/20">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">Experience {index + 1}</CardTitle>
@@ -700,13 +748,18 @@ export default function ResumeBuilderPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label>Job Title</Label>
-                          <Input value={exp.title} onChange={(e) => updateExperience(index, "title", e.target.value)} />
+                          <Input
+                            value={exp.title}
+                            onChange={(e) => updateExperience(index, "title", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
+                          />
                         </div>
                         <div>
                           <Label>Company</Label>
                           <Input
                             value={exp.company}
                             onChange={(e) => updateExperience(index, "company", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -717,6 +770,7 @@ export default function ResumeBuilderPage() {
                           <Input
                             value={exp.location}
                             onChange={(e) => updateExperience(index, "location", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -724,6 +778,7 @@ export default function ResumeBuilderPage() {
                           <Input
                             value={exp.start_date}
                             onChange={(e) => updateExperience(index, "start_date", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -731,6 +786,7 @@ export default function ResumeBuilderPage() {
                           <Input
                             value={exp.end_date}
                             onChange={(e) => updateExperience(index, "end_date", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -741,6 +797,7 @@ export default function ResumeBuilderPage() {
                           rows={3}
                           value={exp.description}
                           onChange={(e) => updateExperience(index, "description", e.target.value)}
+                          className="glass border-white/30 bg-white/60"
                         />
                       </div>
                     </CardContent>
@@ -752,16 +809,16 @@ export default function ResumeBuilderPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-semibold">Education</h3>
-                    <p className="text-sm text-slate-600">Add your educational background</p>
+                    <p className="text-sm text-muted-foreground">Add your educational background</p>
                   </div>
-                  <Button onClick={addEducation} variant="outline">
+                  <Button onClick={addEducation} variant="outline" className="glass-button bg-transparent">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Education
                   </Button>
                 </div>
 
                 {resumeData.education.map((edu, index) => (
-                  <Card key={index}>
+                  <Card key={index} className="glass-card border-white/20">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">Education {index + 1}</CardTitle>
@@ -785,6 +842,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., Bachelor of Science in Computer Science"
                             value={edu.degree}
                             onChange={(e) => updateEducation(index, "degree", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -793,6 +851,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., University of California"
                             value={edu.school}
                             onChange={(e) => updateEducation(index, "school", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -804,6 +863,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., Los Angeles, CA"
                             value={edu.location}
                             onChange={(e) => updateEducation(index, "location", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -812,6 +872,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., May 2023"
                             value={edu.graduation_date}
                             onChange={(e) => updateEducation(index, "graduation_date", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -820,6 +881,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., 3.8"
                             value={edu.gpa}
                             onChange={(e) => updateEducation(index, "gpa", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -832,16 +894,16 @@ export default function ResumeBuilderPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-semibold">Certifications</h3>
-                    <p className="text-sm text-slate-600">Add your professional certifications and licenses</p>
+                    <p className="text-sm text-muted-foreground">Add your professional certifications and licenses</p>
                   </div>
-                  <Button onClick={addCertification} variant="outline">
+                  <Button onClick={addCertification} variant="outline" className="glass-button bg-transparent">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Certification
                   </Button>
                 </div>
 
                 {resumeData.certifications.map((cert, index) => (
-                  <Card key={index}>
+                  <Card key={index} className="glass-card border-white/20">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">Certification {index + 1}</CardTitle>
@@ -865,6 +927,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., AWS Certified Solutions Architect"
                             value={cert.name}
                             onChange={(e) => updateCertification(index, "name", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -873,6 +936,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., Amazon Web Services"
                             value={cert.issuer}
                             onChange={(e) => updateCertification(index, "issuer", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -884,6 +948,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., March 2023"
                             value={cert.date}
                             onChange={(e) => updateCertification(index, "date", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                         <div>
@@ -892,6 +957,7 @@ export default function ResumeBuilderPage() {
                             placeholder="e.g., ABC123DEF456"
                             value={cert.credential_id}
                             onChange={(e) => updateCertification(index, "credential_id", e.target.value)}
+                            className="glass border-white/30 bg-white/60"
                           />
                         </div>
                       </div>
@@ -902,9 +968,9 @@ export default function ResumeBuilderPage() {
 
               <TabsContent value="skills">
                 <div className="space-y-6">
-                  <Card>
+                  <Card className="glass-card border-white/20">
                     <CardHeader>
-                      <CardTitle>Technical Skills</CardTitle>
+                      <CardTitle className="text-xl font-serif">Technical Skills</CardTitle>
                       <CardDescription>Programming languages, frameworks, tools, etc.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -918,6 +984,7 @@ export default function ResumeBuilderPage() {
                               input.value = ""
                             }
                           }}
+                          className="glass border-white/30 bg-white/60"
                         />
                         <Button
                           type="button"
@@ -930,6 +997,7 @@ export default function ResumeBuilderPage() {
                               input.value = ""
                             }
                           }}
+                          className="glass-button"
                         >
                           Add
                         </Button>
@@ -939,7 +1007,7 @@ export default function ResumeBuilderPage() {
                         {resumeData.skills.technical.map((skill, index) => (
                           <div
                             key={index}
-                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2 glass-card"
                           >
                             {skill}
                             <button
@@ -954,9 +1022,9 @@ export default function ResumeBuilderPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="glass-card border-white/20">
                     <CardHeader>
-                      <CardTitle>Soft Skills</CardTitle>
+                      <CardTitle className="text-xl font-serif">Soft Skills</CardTitle>
                       <CardDescription>Communication, leadership, problem-solving, etc.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -970,6 +1038,7 @@ export default function ResumeBuilderPage() {
                               input.value = ""
                             }
                           }}
+                          className="glass border-white/30 bg-white/60"
                         />
                         <Button
                           type="button"
@@ -982,6 +1051,7 @@ export default function ResumeBuilderPage() {
                               input.value = ""
                             }
                           }}
+                          className="glass-button"
                         >
                           Add
                         </Button>
@@ -991,7 +1061,7 @@ export default function ResumeBuilderPage() {
                         {resumeData.skills.soft.map((skill, index) => (
                           <div
                             key={index}
-                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2 glass-card"
                           >
                             {skill}
                             <button
@@ -1010,37 +1080,38 @@ export default function ResumeBuilderPage() {
             </Tabs>
           </div>
 
-          {/* Preview */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-6">
+            <Card className="glass-card border-white/20 sticky top-6">
               <CardHeader>
-                <CardTitle>Preview</CardTitle>
+                <CardTitle className="text-xl font-serif">Preview</CardTitle>
                 <CardDescription>See how your resume looks</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-4 border rounded-lg text-xs space-y-3">
-                  <div className="text-center border-b pb-2">
-                    <h3 className="font-bold text-sm">{resumeData.personal_info.full_name || "Your Name"}</h3>
-                    <p className="text-xs text-slate-600">
+                <div className="glass border-white/30 p-6 rounded-xl text-xs space-y-4 bg-white/80">
+                  <div className="text-center border-b border-white/30 pb-3">
+                    <h3 className="font-bold text-base text-foreground">
+                      {resumeData.personal_info.full_name || "Your Name"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
                       {resumeData.personal_info.email} | {resumeData.personal_info.phone}
                     </p>
-                    <p className="text-xs text-slate-600">{resumeData.personal_info.location}</p>
+                    <p className="text-sm text-muted-foreground">{resumeData.personal_info.location}</p>
                   </div>
 
                   {resumeData.summary && (
                     <div>
-                      <h4 className="font-semibold text-xs mb-1">SUMMARY</h4>
-                      <p className="text-xs text-slate-700">{resumeData.summary}</p>
+                      <h4 className="font-semibold text-sm mb-2 text-foreground">SUMMARY</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{resumeData.summary}</p>
                     </div>
                   )}
 
                   <div>
-                    <h4 className="font-semibold text-xs mb-1">EXPERIENCE</h4>
+                    <h4 className="font-semibold text-sm mb-2 text-foreground">EXPERIENCE</h4>
                     {resumeData.experience.map((exp, index) => (
-                      <div key={index} className="mb-2">
-                        <p className="font-medium text-xs">{exp.title}</p>
-                        <p className="text-xs text-slate-600">{exp.company}</p>
-                        <p className="text-xs text-slate-500">
+                      <div key={index} className="mb-3 glass-card p-3">
+                        <p className="font-medium text-sm text-foreground">{exp.title}</p>
+                        <p className="text-sm text-primary font-medium">{exp.company}</p>
+                        <p className="text-xs text-muted-foreground">
                           {exp.start_date} - {exp.end_date}
                         </p>
                       </div>
@@ -1049,12 +1120,12 @@ export default function ResumeBuilderPage() {
 
                   {resumeData.education.some((edu) => edu.degree || edu.school) && (
                     <div>
-                      <h4 className="font-semibold text-xs mb-1">EDUCATION</h4>
+                      <h4 className="font-semibold text-sm mb-2 text-foreground">EDUCATION</h4>
                       {resumeData.education.map((edu, index) => (
-                        <div key={index} className="mb-2">
-                          <p className="font-medium text-xs">{edu.degree}</p>
-                          <p className="text-xs text-slate-600">{edu.school}</p>
-                          <p className="text-xs text-slate-500">
+                        <div key={index} className="mb-3 glass-card p-3">
+                          <p className="font-medium text-sm text-foreground">{edu.degree}</p>
+                          <p className="text-sm text-muted-foreground">{edu.school}</p>
+                          <p className="text-xs text-muted-foreground">
                             {edu.graduation_date} {edu.gpa && `| GPA: ${edu.gpa}`}
                           </p>
                         </div>
@@ -1064,12 +1135,12 @@ export default function ResumeBuilderPage() {
 
                   {resumeData.certifications.some((cert) => cert.name || cert.issuer) && (
                     <div>
-                      <h4 className="font-semibold text-xs mb-1">CERTIFICATIONS</h4>
+                      <h4 className="font-semibold text-sm mb-2 text-foreground">CERTIFICATIONS</h4>
                       {resumeData.certifications.map((cert, index) => (
-                        <div key={index} className="mb-2">
-                          <p className="font-medium text-xs">{cert.name}</p>
-                          <p className="text-xs text-slate-600">{cert.issuer}</p>
-                          <p className="text-xs text-slate-500">
+                        <div key={index} className="mb-3 glass-card p-3">
+                          <p className="font-medium text-sm text-foreground">{cert.name}</p>
+                          <p className="text-sm text-muted-foreground">{cert.issuer}</p>
+                          <p className="text-xs text-muted-foreground">
                             {cert.date} {cert.credential_id && `| ID: ${cert.credential_id}`}
                           </p>
                         </div>
@@ -1079,19 +1150,21 @@ export default function ResumeBuilderPage() {
 
                   {(resumeData.skills.technical.length > 0 || resumeData.skills.soft.length > 0) && (
                     <div>
-                      <h4 className="font-semibold text-xs mb-1">SKILLS</h4>
-                      {resumeData.skills.technical.length > 0 && (
-                        <div className="mb-1">
-                          <p className="text-xs font-medium text-slate-700">Technical:</p>
-                          <p className="text-xs text-slate-600">{resumeData.skills.technical.join(", ")}</p>
-                        </div>
-                      )}
-                      {resumeData.skills.soft.length > 0 && (
-                        <div>
-                          <p className="text-xs font-medium text-slate-700">Soft Skills:</p>
-                          <p className="text-xs text-slate-600">{resumeData.skills.soft.join(", ")}</p>
-                        </div>
-                      )}
+                      <h4 className="font-semibold text-sm mb-2 text-foreground">SKILLS</h4>
+                      <div className="glass-card p-3">
+                        {resumeData.skills.technical.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-sm font-medium text-foreground">Technical:</p>
+                            <p className="text-sm text-muted-foreground">{resumeData.skills.technical.join(", ")}</p>
+                          </div>
+                        )}
+                        {resumeData.skills.soft.length > 0 && (
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Soft Skills:</p>
+                            <p className="text-sm text-muted-foreground">{resumeData.skills.soft.join(", ")}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

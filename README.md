@@ -44,22 +44,22 @@ An intelligent resume builder that uses AI to optimize your resume for specific 
 
 ### 1. Clone the Repository
 
-```bash
+\`\`\`bash
 git clone https://github.com/nbiggs1337/AI-resume-generator.git
 cd AI-resume-generator
-```
+\`\`\`
 
 ### 2. Install Dependencies
 
-```bash
+\`\`\`bash
 pnpm install
-```
+\`\`\`
 
 ### 3. Environment Variables
 
 Create a `.env.local` file in the root directory:
 
-```
+\`\`\`env
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -73,13 +73,13 @@ XAI_API_KEY=your_xai_api_key
 POSTGRES_URL=your_postgres_connection_string
 POSTGRES_PRISMA_URL=your_postgres_prisma_url
 POSTGRES_URL_NON_POOLING=your_postgres_non_pooling_url
-```
+\`\`\`
 
 ### 4. Database Setup
 
 Run the database migration scripts in order:
 
-```
+\`\`\`bash
 # Connect to your Supabase project and run these SQL scripts:
 # scripts/001_create_profiles.sql
 # scripts/002_create_resumes.sql
@@ -90,13 +90,13 @@ Run the database migration scripts in order:
 # scripts/008_make_first_user_admin.sql
 # scripts/009_admin_resume_policies.sql
 # scripts/010_fix_profiles_policies.sql
-```
+\`\`\`
 
 ### 5. Run Development Server
 
-```
+\`\`\`bash
 pnpm dev
-```
+\`\`\`
 
 Visit `http://localhost:3000` to see the application.
 
@@ -120,7 +120,7 @@ Visit `http://localhost:3000` to see the application.
 
 ## 🏗️ Project Structure
 
-```
+\`\`\`
 ├── app/                    # Next.js App Router pages
 │   ├── admin/             # Admin panel pages
 │   ├── api/               # API routes
@@ -136,7 +136,7 @@ Visit `http://localhost:3000` to see the application.
 │   └── supabase/         # Supabase client configurations
 ├── scripts/              # Database migration scripts
 └── public/               # Static assets
-```
+\`\`\`
 
 ## 🔒 Security Features
 
