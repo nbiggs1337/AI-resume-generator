@@ -54,6 +54,8 @@ export async function POST(request: NextRequest) {
       model: groq("llama3-70b-8192"),
       prompt: `You are a resume parser. Extract structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
 
+CRITICAL: Extract ALL education entries found in the resume. Look for degrees, certifications, courses, bootcamps, training programs, and any educational background.
+
 Required JSON structure:
 {
   "title": "Resume title or job target",
@@ -73,31 +75,53 @@ Required JSON structure:
       "location": "Job location",
       "start_date": "Start date",
       "end_date": "End date or Present",
-      "description": "Job description and achievements"
+      "description": "Job description and achievements with specific metrics and accomplishments"
     }
   ],
   "education": [
     {
-      "degree": "Degree type and major",
-      "school": "School name",
-      "location": "School location", 
-      "graduation_date": "Graduation date",
+      "degree": "Full degree name, major, and specialization",
+      "school": "Complete institution name",
+      "location": "School city and state", 
+      "graduation_date": "Graduation year or date",
       "gpa": "GPA if mentioned"
     }
   ],
   "skills": {
-    "technical": ["skill1", "skill2"],
-    "soft": ["skill1", "skill2"]
+    "technical": ["programming languages", "frameworks", "tools", "technologies"],
+    "soft": ["communication", "leadership", "problem-solving"]
   },
   "certifications": [
     {
-      "name": "Certification name",
+      "name": "Full certification name",
       "issuer": "Issuing organization",
-      "date": "Date obtained",
+      "date": "Date obtained or expiration",
       "credential_id": "Credential ID if mentioned"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Project name",
+      "description": "Project description and technologies used",
+      "url": "Project URL if available"
+    }
+  ],
+  "awards": [
+    {
+      "name": "Award name",
+      "issuer": "Issuing organization",
+      "date": "Date received"
     }
   ]
 }
+
+EDUCATION PARSING INSTRUCTIONS:
+- Extract ALL educational entries including: degrees, diplomas, certificates, bootcamps, online courses, training programs
+- For each education entry, capture: full degree/program name, complete institution name, location, graduation date, GPA if mentioned
+- Look for education in sections like: Education, Academic Background, Training, Certifications, Professional Development
+- Include both formal education (universities, colleges) and informal education (bootcamps, online courses)
+- If multiple degrees from same institution, create separate entries
+- Extract graduation dates in various formats (year only, month/year, full date)
 
 Resume text:
 ${pdfText}`,

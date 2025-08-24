@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Download, Eye, FileText, Loader2, Crown } from 'lucide-react'
+import { Download, Eye, FileText, Loader2, Crown } from "lucide-react"
 import jsPDF from "jspdf"
 import { TEMPLATE_CATEGORIES, type TemplateType } from "@/lib/pdf/resume-templates"
 import { useResumeLimit } from "@/hooks/use-resume-limit"
@@ -579,37 +579,63 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
       yPosition = addSection("Education", templateType === "creative" ? margin : margin, yPosition)
 
       resumeData.education.forEach((edu: any) => {
-        let degree = edu.degree || "Degree"
-        
-        // Check if degree field contains JSON string and parse it
-        if (typeof degree === "string" && degree.startsWith("[{")) {
+        let educationEntry = edu
+
+        // Check if the entire education entry or any field contains JSON strings
+        if (typeof edu.degree === "string" && edu.degree.startsWith("[{")) {
           try {
-            const parsedEducation = JSON.parse(degree)
+            const parsedEducation = JSON.parse(edu.degree)
             if (Array.isArray(parsedEducation) && parsedEducation.length > 0) {
               // Use the first education entry from the parsed JSON
-              degree = parsedEducation[0].degree || "Degree"
+              educationEntry = parsedEducation[0]
+              console.log("[v0] Parsed education JSON successfully:", educationEntry)
             }
           } catch (error) {
             console.log("[v0] Failed to parse education JSON, using original value")
           }
         }
 
+        // Extract clean values with fallbacks
+        const degree = educationEntry.degree || "Degree"
+        const school = educationEntry.school || educationEntry.institution || "Institution"
+        const graduationDate = educationEntry.graduation_date || educationEntry.date || ""
+        const gpa = educationEntry.gpa || ""
+        const location = educationEntry.location || ""
+
         doc.setFontSize(11)
         doc.setFont("helvetica", "bold")
         doc.text(degree, templateType === "creative" ? margin : margin, yPosition)
 
-        if (edu.graduation_date) {
+        if (graduationDate) {
           doc.setFont("helvetica", "normal")
           doc.setFontSize(10)
-          doc.text(edu.graduation_date, templateType === "creative" ? pageWidth - 35 : pageWidth - margin, yPosition, {
+          doc.text(graduationDate, templateType === "creative" ? pageWidth - 35 : pageWidth - margin, yPosition, {
             align: "right",
           })
         }
         yPosition += 6
 
         doc.setFont("helvetica", "italic")
-        doc.text(edu.school || "Institution", templateType === "creative" ? margin : margin, yPosition)
-        yPosition += 10
+        doc.text(school, templateType === "creative" ? margin : margin, yPosition)
+        yPosition += 5
+
+        // Add GPA if available
+        if (gpa && gpa.trim()) {
+          doc.setFontSize(9)
+          doc.setFont("helvetica", "normal")
+          doc.text(`GPA: ${gpa}`, templateType === "creative" ? margin : margin, yPosition)
+          yPosition += 4
+        }
+
+        // Add location if available
+        if (location && location.trim()) {
+          doc.setFontSize(9)
+          doc.setFont("helvetica", "normal")
+          doc.text(location, templateType === "creative" ? margin : margin, yPosition)
+          yPosition += 4
+        }
+
+        yPosition += 6
       })
     }
 
