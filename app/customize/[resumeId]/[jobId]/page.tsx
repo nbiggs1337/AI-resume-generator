@@ -181,6 +181,12 @@ export default function CustomizeResumePage() {
   }
 
   const formatEducationData = (data: string) => {
+    // First check if the data looks like JSON (starts with [ or {)
+    if (!data.trim().startsWith("[") && !data.trim().startsWith("{")) {
+      // If it's plain text, return it as-is
+      return data
+    }
+
     try {
       const educationArray = JSON.parse(data)
       if (Array.isArray(educationArray)) {
@@ -196,7 +202,9 @@ export default function CustomizeResumePage() {
       }
     } catch (error) {
       console.error("[v0] Error parsing education data:", error)
+      return data
     }
+
     return data
   }
 
