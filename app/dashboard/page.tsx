@@ -77,6 +77,15 @@ export default async function DashboardPage() {
         currentCount={totalResumes}
         limit={profile?.resume_limit || 10}
         accountType={profile?.account_type || "limited"}
+        resumes={resumes || []}
+        jobPostings={jobPostings || []}
+        customizations={customizations || []}
+        totalResumes={totalResumes}
+        totalJobPostings={totalJobPostings}
+        totalCustomizations={totalCustomizations}
+        recentCustomizations={recentCustomizations}
+        profile={profile}
+        user={user}
       />
 
       <header className="glass border-b border-white/20 sticky top-0 z-50">
