@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { xai } from "@ai-sdk/xai"
+import { groq } from "@ai-sdk/groq"
 import { generateText } from "ai"
 
 export async function POST(request: NextRequest) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Sending text to AI for parsing...")
     const { text } = await generateText({
-      model: xai("grok-4"),
+      model: groq("llama3-70b-8192"),
       prompt: `You are a resume parser. Extract structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
 
 Required JSON structure:

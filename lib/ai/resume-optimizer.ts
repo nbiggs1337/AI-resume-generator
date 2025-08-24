@@ -1,5 +1,5 @@
 import { generateText } from "ai"
-import { xai } from "@ai-sdk/xai"
+import { groq } from "@ai-sdk/groq"
 
 export interface ResumeOptimizationSuggestion {
   section: string
@@ -213,7 +213,7 @@ CRITICAL: You must return valid JSON only. Do not include explanatory text befor
 
   try {
     const { text } = await generateText({
-      model: xai("grok-4"),
+      model: groq("llama3-70b-8192"),
       prompt,
       temperature: 0.2, // Reduced temperature for more consistent JSON output
     })
@@ -306,7 +306,7 @@ Return only the generated text without additional formatting.
 
   try {
     const { text } = await generateText({
-      model: xai("grok-4"),
+      model: groq("llama3-70b-8192"),
       prompt,
       temperature: 0.4,
     })

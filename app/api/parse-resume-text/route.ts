@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { xai } from "@ai-sdk/xai"
+import { groq } from "@ai-sdk/groq"
 import { generateText } from "ai"
 
 export async function POST(request: NextRequest) {
@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Sample text:", text.substring(0, 200))
 
     const { text: aiResponse } = await generateText({
-      model: xai("grok-4"),
-      prompt: `You are a resume parser. Extract structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
+      model: groq("llama3-70b-8192"),
+      prompt: `You are a comprehensive resume parser. Extract ALL structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
 
-Required JSON structure:
+Required JSON structure - extract ALL available information:
 {
   "title": "Resume title or job target",
   "personal_info": {
@@ -39,7 +39,7 @@ Required JSON structure:
       "location": "Job location",
       "start_date": "Start date",
       "end_date": "End date or Present",
-      "description": "Job description and achievements"
+      "description": "Job description and achievements with specific accomplishments and metrics"
     }
   ],
   "education": [
@@ -51,10 +51,35 @@ Required JSON structure:
       "gpa": "GPA if mentioned"
     }
   ],
+  "certifications": [
+    {
+      "name": "Certification name",
+      "issuer": "Issuing organization",
+      "date": "Date obtained",
+      "expiry": "Expiry date if mentioned"
+    }
+  ],
   "skills": {
-    "technical": ["skill1", "skill2"],
-    "soft": ["skill1", "skill2"]
-  }
+    "technical": ["programming languages", "frameworks", "tools", "technologies"],
+    "soft": ["communication", "leadership", "problem-solving"],
+    "other": ["languages", "additional skills"]
+  },
+  "projects": [
+    {
+      "name": "Project name",
+      "description": "Project description and technologies used",
+      "url": "Project URL if available"
+    }
+  ],
+  "awards": ["Award name and year"],
+  "languages": ["Language and proficiency level"],
+  "volunteer": [
+    {
+      "organization": "Organization name",
+      "role": "Volunteer role",
+      "description": "Description of volunteer work"
+    }
+  ]
 }
 
 Resume text:
