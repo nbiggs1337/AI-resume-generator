@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Share, Trash2, Check, Copy } from "lucide-react"
+import { ArrowLeft, Edit, Share, Trash2, Check, Copy, FileText } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { PDFPreview } from "@/components/pdf-preview"
+import { CoverLetterGenerator } from "@/components/cover-letter-generator"
 import { useToast } from "@/hooks/use-toast"
 
 function isValidUUID(str: string): boolean {
@@ -29,6 +30,7 @@ export default function ResumeViewPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [shareIcon, setShareIcon] = useState<"share" | "copy" | "check">("share")
+  const [showCoverLetter, setShowCoverLetter] = useState(false)
   const { toast } = useToast()
 
   const supabase = createClient()
@@ -198,6 +200,15 @@ export default function ResumeViewPage() {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCoverLetter(!showCoverLetter)}
+                className={showCoverLetter ? "bg-blue-50 text-blue-700" : ""}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Cover Letter
+              </Button>
               {!showDeleteConfirm ? (
                 <Button
                   variant="outline"
@@ -220,6 +231,12 @@ export default function ResumeViewPage() {
               )}
             </div>
           </div>
+
+          {showCoverLetter && (
+            <div className="mt-6">
+              <CoverLetterGenerator resumeId={resume.id} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             <div className="xl:col-span-3">

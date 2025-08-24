@@ -180,6 +180,33 @@ export default function CustomizeResumePage() {
     setSelectedSuggestions(newSelected)
   }
 
+  const formatEducationData = (data: string) => {
+    try {
+      const educationArray = JSON.parse(data)
+      if (Array.isArray(educationArray)) {
+        return educationArray.map((edu, index) => (
+          <div key={index} className="mb-3 last:mb-0">
+            <div className="font-medium">{edu.degree}</div>
+            <div className="text-sm text-slate-600">{edu.school}</div>
+            {edu.graduation_date && <div className="text-sm text-slate-500">Graduated: {edu.graduation_date}</div>}
+            {edu.gpa && <div className="text-sm text-slate-500">GPA: {edu.gpa}</div>}
+            {edu.location && <div className="text-sm text-slate-500">{edu.location}</div>}
+          </div>
+        ))
+      }
+    } catch (error) {
+      console.error("[v0] Error parsing education data:", error)
+    }
+    return data
+  }
+
+  const formatSectionContent = (content: string, section: string) => {
+    if (section === "education") {
+      return formatEducationData(content)
+    }
+    return content
+  }
+
   const handleApplySuggestions = async () => {
     if (selectedSuggestions.size === 0 || !customizationId) return
 
@@ -391,10 +418,14 @@ export default function CustomizeResumePage() {
                                 <TabsTrigger value="suggested">Suggested</TabsTrigger>
                               </TabsList>
                               <TabsContent value="current" className="mt-3">
-                                <div className="bg-slate-100 p-3 rounded text-sm">{suggestion.current}</div>
+                                <div className="bg-slate-100 p-3 rounded text-sm">
+                                  {formatSectionContent(suggestion.current, suggestion.section)}
+                                </div>
                               </TabsContent>
                               <TabsContent value="suggested" className="mt-3">
-                                <div className="bg-green-50 p-3 rounded text-sm">{suggestion.suggested}</div>
+                                <div className="bg-green-50 p-3 rounded text-sm">
+                                  {formatSectionContent(suggestion.suggested, suggestion.section)}
+                                </div>
                               </TabsContent>
                             </Tabs>
                           </div>
