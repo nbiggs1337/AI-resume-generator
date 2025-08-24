@@ -183,6 +183,13 @@ MANDATORY REQUIREMENTS:
 - You MUST identify at least 5 keyword matches from the job posting
 - You MUST identify at least 5 missing keywords that should be added
 
+CRITICAL DATA FORMATTING RULES:
+- When suggesting education changes, provide ONLY clean text values
+- NEVER embed JSON objects within text fields
+- Education degree field must contain ONLY the degree name as plain text
+- Do NOT include nested JSON structures in any suggestion text
+- All suggested text must be clean, readable content suitable for display
+
 ATS OPTIMIZATION FOCUS AREAS (provide suggestions for each):
 1. SUMMARY: Add job-specific keywords and quantified achievements
 2. EXPERIENCE: Include exact keywords from job posting with metrics
@@ -242,6 +249,8 @@ CRITICAL INSTRUCTIONS:
 - Do not include explanatory text before or after the JSON
 - The response must start with { and end with }
 - Focus on exact keyword matches from the job posting
+- ALL suggested text must be clean, readable content - NO embedded JSON objects
+- Education suggestions must contain only plain text degree names, school names, and dates
 `
 
   try {

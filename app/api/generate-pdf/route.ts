@@ -149,19 +149,40 @@ const generatePDFWithJsPDF = (resumeData: any, templateType: TemplateType) => {
 
     yPosition = addSection("Education", margin, yPosition)
 
-    resumeData.education.forEach((edu: any) => {
+    let educationArray = resumeData.education
+
+    // Check if education is stored as a JSON string
+    if (typeof educationArray === "string") {
+      try {
+        educationArray = JSON.parse(educationArray)
+      } catch (e) {
+        console.log("[v0] Failed to parse education JSON string, treating as single entry")
+        educationArray = [{ degree: educationArray, school: "", graduation_date: "" }]
+      }
+    }
+
+    // Ensure we have an array
+    if (!Array.isArray(educationArray)) {
+      educationArray = [educationArray]
+    }
+
+    educationArray.forEach((edu: any) => {
       let degree = edu.degree || "Degree"
-      
-      // Check if degree field contains JSON string
-      if (typeof degree === 'string' && degree.startsWith('[{')) {
+      let school = edu.school || "Institution"
+      let graduationDate = edu.graduation_date || ""
+
+      // Handle cases where individual fields might contain JSON
+      if (typeof degree === "string" && degree.startsWith("[{")) {
         try {
           const parsedEducation = JSON.parse(degree)
           if (Array.isArray(parsedEducation) && parsedEducation.length > 0) {
             degree = parsedEducation[0].degree || "Degree"
+            school = parsedEducation[0].school || school
+            graduationDate = parsedEducation[0].graduation_date || graduationDate
           }
         } catch (e) {
-          // If parsing fails, use the original string but clean it up
-          degree = degree.replace(/^\[\{.*?"degree":\s*"([^"]+)".*$/, '$1')
+          // If parsing fails, clean up the string
+          degree = degree.replace(/^\[\{.*?"degree":\s*"([^"]+)".*$/, "$1") || degree
         }
       }
 
@@ -169,15 +190,15 @@ const generatePDFWithJsPDF = (resumeData: any, templateType: TemplateType) => {
       doc.setFont("helvetica", "bold")
       doc.text(degree, margin, yPosition)
 
-      if (edu.graduation_date) {
+      if (graduationDate) {
         doc.setFont("helvetica", "normal")
         doc.setFontSize(10)
-        doc.text(edu.graduation_date, pageWidth - margin, yPosition, { align: "right" })
+        doc.text(graduationDate, pageWidth - margin, yPosition, { align: "right" })
       }
       yPosition += 6
 
       doc.setFont("helvetica", "italic")
-      doc.text(edu.school || "Institution", margin, yPosition)
+      doc.text(school, margin, yPosition)
       yPosition += 10
     })
   }
