@@ -72,22 +72,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-gray-100">
-      <DashboardClient
-        isAtLimit={isAtLimit}
-        currentCount={totalResumes}
-        limit={profile?.resume_limit || 10}
-        accountType={profile?.account_type || "limited"}
-        resumes={resumes || []}
-        jobPostings={jobPostings || []}
-        customizations={customizations || []}
-        totalResumes={totalResumes}
-        totalJobPostings={totalJobPostings}
-        totalCustomizations={totalCustomizations}
-        recentCustomizations={recentCustomizations}
-        profile={profile}
-        user={user}
-      />
-
       <header className="glass border-b border-white/20 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -114,6 +98,22 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
+
+      <DashboardClient
+        isAtLimit={isAtLimit}
+        currentCount={totalResumes}
+        limit={profile?.resume_limit || 10}
+        accountType={profile?.account_type || "limited"}
+        resumes={resumes || []}
+        jobPostings={jobPostings || []}
+        customizations={customizations || []}
+        totalResumes={totalResumes}
+        totalJobPostings={totalJobPostings}
+        totalCustomizations={totalCustomizations}
+        recentCustomizations={recentCustomizations}
+        profile={profile}
+        user={user}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
