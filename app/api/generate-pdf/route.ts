@@ -150,9 +150,24 @@ const generatePDFWithJsPDF = (resumeData: any, templateType: TemplateType) => {
     yPosition = addSection("Education", margin, yPosition)
 
     resumeData.education.forEach((edu: any) => {
+      let degree = edu.degree || "Degree"
+      
+      // Check if degree field contains JSON string
+      if (typeof degree === 'string' && degree.startsWith('[{')) {
+        try {
+          const parsedEducation = JSON.parse(degree)
+          if (Array.isArray(parsedEducation) && parsedEducation.length > 0) {
+            degree = parsedEducation[0].degree || "Degree"
+          }
+        } catch (e) {
+          // If parsing fails, use the original string but clean it up
+          degree = degree.replace(/^\[\{.*?"degree":\s*"([^"]+)".*$/, '$1')
+        }
+      }
+
       doc.setFontSize(11)
       doc.setFont("helvetica", "bold")
-      doc.text(edu.degree || "Degree", margin, yPosition)
+      doc.text(degree, margin, yPosition)
 
       if (edu.graduation_date) {
         doc.setFont("helvetica", "normal")

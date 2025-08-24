@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Download, Eye, FileText, Loader2, Crown } from "lucide-react"
+import { Download, Eye, FileText, Loader2, Crown } from 'lucide-react'
 import jsPDF from "jspdf"
 import { TEMPLATE_CATEGORIES, type TemplateType } from "@/lib/pdf/resume-templates"
 import { useResumeLimit } from "@/hooks/use-resume-limit"
@@ -579,9 +579,24 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
       yPosition = addSection("Education", templateType === "creative" ? margin : margin, yPosition)
 
       resumeData.education.forEach((edu: any) => {
+        let degree = edu.degree || "Degree"
+        
+        // Check if degree field contains JSON string and parse it
+        if (typeof degree === "string" && degree.startsWith("[{")) {
+          try {
+            const parsedEducation = JSON.parse(degree)
+            if (Array.isArray(parsedEducation) && parsedEducation.length > 0) {
+              // Use the first education entry from the parsed JSON
+              degree = parsedEducation[0].degree || "Degree"
+            }
+          } catch (error) {
+            console.log("[v0] Failed to parse education JSON, using original value")
+          }
+        }
+
         doc.setFontSize(11)
         doc.setFont("helvetica", "bold")
-        doc.text(edu.degree || "Degree", templateType === "creative" ? margin : margin, yPosition)
+        doc.text(degree, templateType === "creative" ? margin : margin, yPosition)
 
         if (edu.graduation_date) {
           doc.setFont("helvetica", "normal")

@@ -175,14 +175,44 @@ export async function POST(request: NextRequest) {
           }
           break
         case "education":
-          // Apply education suggestions by updating the first education entry
-          if (
-            updatedResumeData.education &&
-            Array.isArray(updatedResumeData.education) &&
-            updatedResumeData.education[0]
-          ) {
-            // Update the degree field with the suggested text
-            updatedResumeData.education[0].degree = cleanedSuggestion
+          try {
+            // Check if the suggested text is a JSON string
+            if (cleanedSuggestion.startsWith("[{") && cleanedSuggestion.endsWith("}]")) {
+              // Parse the JSON string into education entries
+              const parsedEducation = JSON.parse(cleanedSuggestion)
+              if (Array.isArray(parsedEducation)) {
+                updatedResumeData.education = parsedEducation
+              } else {
+                // Fallback: update the first education entry
+                if (
+                  updatedResumeData.education &&
+                  Array.isArray(updatedResumeData.education) &&
+                  updatedResumeData.education[0]
+                ) {
+                  updatedResumeData.education[0].degree = cleanedSuggestion
+                }
+              }
+            } else {
+              // Apply education suggestions by updating the first education entry
+              if (
+                updatedResumeData.education &&
+                Array.isArray(updatedResumeData.education) &&
+                updatedResumeData.education[0]
+              ) {
+                // Update the degree field with the suggested text
+                updatedResumeData.education[0].degree = cleanedSuggestion
+              }
+            }
+          } catch (parseError) {
+            console.error("[v0] Error parsing education JSON:", parseError)
+            // Fallback: update the first education entry
+            if (
+              updatedResumeData.education &&
+              Array.isArray(updatedResumeData.education) &&
+              updatedResumeData.education[0]
+            ) {
+              updatedResumeData.education[0].degree = cleanedSuggestion
+            }
           }
           break
         default:
