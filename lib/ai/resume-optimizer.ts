@@ -158,7 +158,7 @@ function extractJsonFromResponse(text: string): any {
 
 export async function optimizeResumeForJob(resumeData: any, jobPosting: any): Promise<OptimizationResult> {
   const prompt = `
-You are an expert ATS (Applicant Tracking System) optimization specialist. Analyze the following resume against the job posting and provide EXACTLY 5 OR MORE specific, actionable ATS optimization suggestions.
+You are an expert ATS (Applicant Tracking System) optimization specialist. Analyze the following resume against the job posting and provide EXACTLY 5 OR MORE specific, actionable ATS optimization suggestions. Do not lie.
 
 JOB POSTING:
 Title: ${jobPosting.title}
