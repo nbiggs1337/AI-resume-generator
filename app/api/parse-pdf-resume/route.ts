@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Clean up the extracted text
-      pdfText = pdfText.replace(/\s+/g, " ").trim().substring(0, 8000) // Limit to 8000 chars for AI processing
+      pdfText = pdfText.replace(/\s+/g, " ").trim().substring(0, 15000) // Increased limit for comprehensive parsing
     } catch (error) {
       console.error("[v0] PDF parsing error:", error)
       return NextResponse.json(
@@ -52,7 +52,15 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Sending text to AI for parsing...")
     const { text } = await generateText({
       model: groq("llama3-70b-8192"),
-      prompt: `You are a resume parser. Extract structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
+      maxTokens: 4000,
+      prompt: `You are a comprehensive resume parser. Extract ALL structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
+
+CRITICAL INSTRUCTIONS:
+- Extract EVERY piece of information found in the resume
+- Do NOT truncate or summarize any content
+- Include ALL job descriptions, achievements, and details in full
+- Capture ALL education entries, certifications, and skills
+- Return complete information without abbreviating or cutting off text
 
 CRITICAL: Extract ALL education entries found in the resume. Look for degrees, certifications, courses, bootcamps, training programs, and any educational background.
 
@@ -67,7 +75,7 @@ Required JSON structure:
     "linkedin": "LinkedIn URL if found",
     "website": "Website URL if found"
   },
-  "summary": "Professional summary or objective",
+  "summary": "COMPLETE professional summary or objective - include ALL text",
   "experience": [
     {
       "title": "Job title",
@@ -75,26 +83,28 @@ Required JSON structure:
       "location": "Job location",
       "start_date": "Start date",
       "end_date": "End date or Present",
-      "description": "Job description and achievements with specific metrics and accomplishments"
+      "description": "COMPLETE job description including ALL achievements, responsibilities, metrics, and accomplishments - do not truncate"
     }
   ],
   "education": [
     {
-      "degree": "Full degree name, major, and specialization",
+      "degree": "Complete degree name, major, and specialization",
       "school": "Complete institution name",
       "location": "School city and state", 
       "graduation_date": "Graduation year or date",
-      "gpa": "GPA if mentioned"
+      "gpa": "GPA if mentioned",
+      "honors": "Any honors or distinctions",
+      "coursework": "Relevant coursework if mentioned"
     }
   ],
   "skills": {
-    "technical": ["programming languages", "frameworks", "tools", "technologies"],
-    "soft": ["communication", "leadership", "problem-solving"]
+    "technical": ["ALL programming languages", "ALL frameworks", "ALL tools", "ALL technologies"],
+    "soft": ["ALL communication", "ALL leadership", "ALL problem-solving skills"]
   },
   "certifications": [
     {
-      "name": "Full certification name",
-      "issuer": "Issuing organization",
+      "name": "Complete certification name",
+      "issuer": "Full issuing organization",
       "date": "Date obtained or expiration",
       "credential_id": "Credential ID if mentioned"
     }
@@ -102,13 +112,14 @@ Required JSON structure:
   "projects": [
     {
       "name": "Project name",
-      "description": "Project description and technologies used",
-      "url": "Project URL if available"
+      "description": "COMPLETE project description including ALL technologies and achievements",
+      "url": "Project URL if available",
+      "technologies": ["ALL technologies used"]
     }
   ],
   "awards": [
     {
-      "name": "Award name",
+      "name": "Complete award name",
       "issuer": "Issuing organization",
       "date": "Date received"
     }
@@ -117,11 +128,19 @@ Required JSON structure:
 
 EDUCATION PARSING INSTRUCTIONS:
 - Extract ALL educational entries including: degrees, diplomas, certificates, bootcamps, online courses, training programs
-- For each education entry, capture: full degree/program name, complete institution name, location, graduation date, GPA if mentioned
+- For each education entry, capture: complete degree/program name, full institution name, location, graduation date, GPA, honors
 - Look for education in sections like: Education, Academic Background, Training, Certifications, Professional Development
 - Include both formal education (universities, colleges) and informal education (bootcamps, online courses)
 - If multiple degrees from same institution, create separate entries
 - Extract graduation dates in various formats (year only, month/year, full date)
+- Include ALL coursework, honors, and academic achievements mentioned
+
+EXPERIENCE PARSING INSTRUCTIONS:
+- Extract ALL work experience entries with complete job descriptions
+- Include EVERY bullet point, achievement, and responsibility
+- Capture ALL metrics, numbers, and quantifiable results
+- Do NOT summarize or shorten job descriptions
+- Include ALL technologies, tools, and skills mentioned in each role
 
 Resume text:
 ${pdfText}`,

@@ -18,7 +18,15 @@ export async function POST(request: NextRequest) {
 
     const { text: aiResponse } = await generateText({
       model: groq("llama3-70b-8192"),
+      maxTokens: 4000,
       prompt: `You are a comprehensive resume parser. Extract ALL structured information from the following resume text and return ONLY a valid JSON object with no additional text or explanation.
+
+CRITICAL INSTRUCTIONS:
+- Extract EVERY piece of information found in the resume
+- Do NOT truncate or summarize any content
+- Include ALL job descriptions, achievements, and details in full
+- Capture ALL education entries, certifications, and skills
+- Return complete information without abbreviating or cutting off text
 
 Required JSON structure - extract ALL available information:
 {
@@ -31,7 +39,7 @@ Required JSON structure - extract ALL available information:
     "linkedin": "LinkedIn URL if found",
     "website": "Website URL if found"
   },
-  "summary": "Professional summary or objective",
+  "summary": "Complete professional summary or objective - include ALL text",
   "experience": [
     {
       "title": "Job title",
@@ -39,45 +47,49 @@ Required JSON structure - extract ALL available information:
       "location": "Job location",
       "start_date": "Start date",
       "end_date": "End date or Present",
-      "description": "Job description and achievements with specific accomplishments and metrics"
+      "description": "COMPLETE job description including ALL achievements, responsibilities, metrics, and accomplishments - do not truncate or summarize"
     }
   ],
   "education": [
     {
-      "degree": "Degree type and major",
-      "school": "School name",
+      "degree": "Complete degree type, major, and any specializations",
+      "school": "Full school name",
       "location": "School location", 
       "graduation_date": "Graduation date",
-      "gpa": "GPA if mentioned"
+      "gpa": "GPA if mentioned",
+      "honors": "Any honors, magna cum laude, etc.",
+      "coursework": "Relevant coursework if mentioned"
     }
   ],
   "certifications": [
     {
-      "name": "Certification name",
-      "issuer": "Issuing organization",
+      "name": "Complete certification name",
+      "issuer": "Full issuing organization name",
       "date": "Date obtained",
-      "expiry": "Expiry date if mentioned"
+      "expiry": "Expiry date if mentioned",
+      "credential_id": "Credential ID if available"
     }
   ],
   "skills": {
-    "technical": ["programming languages", "frameworks", "tools", "technologies"],
-    "soft": ["communication", "leadership", "problem-solving"],
-    "other": ["languages", "additional skills"]
+    "technical": ["ALL programming languages", "ALL frameworks", "ALL tools", "ALL technologies"],
+    "soft": ["ALL soft skills mentioned"],
+    "other": ["ALL languages", "ALL additional skills"]
   },
   "projects": [
     {
       "name": "Project name",
-      "description": "Project description and technologies used",
-      "url": "Project URL if available"
+      "description": "COMPLETE project description including ALL technologies, achievements, and details",
+      "url": "Project URL if available",
+      "technologies": ["ALL technologies used"]
     }
   ],
-  "awards": ["Award name and year"],
-  "languages": ["Language and proficiency level"],
+  "awards": ["ALL awards with complete names and years"],
+  "languages": ["ALL languages with proficiency levels"],
   "volunteer": [
     {
       "organization": "Organization name",
       "role": "Volunteer role",
-      "description": "Description of volunteer work"
+      "description": "COMPLETE description of volunteer work and impact"
     }
   ]
 }
