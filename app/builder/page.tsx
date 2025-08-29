@@ -49,6 +49,127 @@ const sanitizeFormData = (data: any) => {
   return sanitizeObject(data)
 }
 
+const sortExperienceByDate = (experience: any[]) => {
+  return [...experience].sort((a, b) => {
+    const aIsCurrent = a.end_date && a.end_date.toLowerCase().includes("current")
+    const bIsCurrent = b.end_date && b.end_date.toLowerCase().includes("current")
+
+    if (aIsCurrent && bIsCurrent) return 0 // Both current, maintain order
+    if (aIsCurrent) return -1 // a is current, put it first
+    if (bIsCurrent) return 1 // b is current, put it first
+
+    // Handle empty dates by putting them at the end
+    if (!a.end_date && !b.end_date) return 0
+    if (!a.end_date) return 1
+    if (!b.end_date) return -1
+
+    // Parse dates for comparison - handle year-only dates by treating them as end of year
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return new Date(0)
+
+      const trimmed = dateStr.trim().toLowerCase()
+
+      // Handle current/present variations
+      if (trimmed.includes("current") || trimmed.includes("present") || trimmed.includes("now")) {
+        return new Date() // Current date
+      }
+
+      // Year only (2025)
+      if (/^\d{4}$/.test(trimmed)) {
+        return new Date(Number.parseInt(trimmed) + 1, 0, 1) // January 1st of next year
+      }
+
+      // MM/YY format (11/23)
+      if (/^\d{1,2}\/\d{2}$/.test(trimmed)) {
+        const [month, year] = trimmed.split("/")
+        const fullYear = 2000 + Number.parseInt(year)
+        return new Date(fullYear, Number.parseInt(month) - 1, 1)
+      }
+
+      // MM/DD/YY format (11/15/23)
+      if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(trimmed)) {
+        const [month, day, year] = trimmed.split("/")
+        const fullYear = 2000 + Number.parseInt(year)
+        return new Date(fullYear, Number.parseInt(month) - 1, Number.parseInt(day))
+      }
+
+      // MM/DD/YYYY format (11/15/2023)
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
+        const [month, day, year] = trimmed.split("/")
+        return new Date(Number.parseInt(year), Number.parseInt(month) - 1, Number.parseInt(day))
+      }
+
+      // YYYY-MM format (2025-12)
+      if (/^\d{4}-\d{1,2}$/.test(trimmed)) {
+        return new Date(trimmed + "-01")
+      }
+
+      // Month Year formats (January 2023, Jan 2023, Jan. 2023)
+      const monthYearMatch = trimmed.match(
+        /^(january|february|march|april|may|june|july|august|september|october|november|december|jan\.?|feb\.?|mar\.?|apr\.?|may\.?|jun\.?|jul\.?|aug\.?|sep\.?|oct\.?|nov\.?|dec\.?)\s+(\d{4})$/i,
+      )
+      if (monthYearMatch) {
+        const monthStr = monthYearMatch[1].replace(".", "")
+        const year = Number.parseInt(monthYearMatch[2])
+        const monthMap: { [key: string]: number } = {
+          january: 0,
+          jan: 0,
+          february: 1,
+          feb: 1,
+          march: 2,
+          mar: 2,
+          april: 3,
+          apr: 3,
+          may: 4,
+          june: 5,
+          jun: 5,
+          july: 6,
+          jul: 6,
+          august: 7,
+          aug: 7,
+          september: 8,
+          sep: 8,
+          october: 9,
+          oct: 9,
+          november: 10,
+          nov: 10,
+          december: 11,
+          dec: 11,
+        }
+        const month = monthMap[monthStr.toLowerCase()]
+        if (month !== undefined) {
+          return new Date(year, month, 1)
+        }
+      }
+
+      // Try to parse as-is for other formats
+      return new Date(dateStr)
+    }
+
+    const dateA = parseDate(a.end_date)
+    const dateB = parseDate(b.end_date)
+
+    // Sort by most recent first
+    return dateB.getTime() - dateA.getTime()
+  })
+}
+
+const sortEducationByDate = (education: any[]) => {
+  return [...education].sort((a, b) => {
+    // Handle empty dates by putting them at the end
+    if (!a.graduation_date && !b.graduation_date) return 0
+    if (!a.graduation_date) return 1
+    if (!b.graduation_date) return -1
+
+    // Parse dates for comparison (handle various formats)
+    const dateA = new Date(a.graduation_date + (a.graduation_date.includes("-") ? "" : "-01"))
+    const dateB = new Date(b.graduation_date + (b.graduation_date.includes("-") ? "" : "-01"))
+
+    // Sort by most recent first
+    return dateB.getTime() - dateA.getTime()
+  })
+}
+
 export default function ResumeBuilderPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -204,10 +325,13 @@ export default function ResumeBuilderPage() {
         }
       }
 
+      const sortedExperience = sortExperienceByDate(resumeData.experience)
+      const sortedEducation = sortEducationByDate(resumeData.education)
+
       const resumeRecord = {
         title: resumeData.title,
-        work_experience: resumeData.experience,
-        education: resumeData.education,
+        work_experience: sortedExperience,
+        education: sortedEducation,
         certifications: resumeData.certifications,
         skills: resumeData.skills,
         additional_sections: {
@@ -1127,21 +1251,6 @@ export default function ResumeBuilderPage() {
                           <p className="text-sm text-muted-foreground">{edu.school}</p>
                           <p className="text-xs text-muted-foreground">
                             {edu.graduation_date} {edu.gpa && `| GPA: ${edu.gpa}`}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {resumeData.certifications.some((cert) => cert.name || cert.issuer) && (
-                    <div>
-                      <h4 className="font-semibold text-sm mb-2 text-foreground">CERTIFICATIONS</h4>
-                      {resumeData.certifications.map((cert, index) => (
-                        <div key={index} className="mb-3 glass-card p-3">
-                          <p className="font-medium text-sm text-foreground">{cert.name}</p>
-                          <p className="text-sm text-muted-foreground">{cert.issuer}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {cert.date} {cert.credential_id && `| ID: ${cert.credential_id}`}
                           </p>
                         </div>
                       ))}
