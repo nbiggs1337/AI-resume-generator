@@ -69,15 +69,24 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         doc.setFontSize(10)
         doc.setFont("times", "normal")
-        const contactLine = [
+        const basicContact = [
           resumeData.personal_info?.email,
           resumeData.personal_info?.phone,
           resumeData.personal_info?.location,
         ]
           .filter(Boolean)
           .join(" • ")
-        doc.text(contactLine, pageWidth / 2, yPosition, { align: "center" })
-        yPosition += 15
+        doc.text(basicContact, pageWidth / 2, yPosition, { align: "center" })
+        yPosition += 5
+
+        const webContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" • ")
+        if (webContact) {
+          doc.text(webContact, pageWidth / 2, yPosition, { align: "center" })
+          yPosition += 5
+        }
+        yPosition += 10
 
         // Add horizontal line
         doc.setLineWidth(0.5)
@@ -101,14 +110,21 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         // Contact info in white
         doc.setFontSize(9)
-        const execContact = [
+        const execBasicContact = [
           resumeData.personal_info?.email,
           resumeData.personal_info?.phone,
           resumeData.personal_info?.location,
         ]
           .filter(Boolean)
           .join(" | ")
-        doc.text(execContact, margin, 45)
+        doc.text(execBasicContact, margin, 42)
+
+        const execWebContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" | ")
+        if (execWebContact) {
+          doc.text(execWebContact, margin, 47)
+        }
 
         doc.setTextColor(0, 0, 0)
         yPosition = 65
@@ -145,6 +161,16 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
         if (resumeData.personal_info?.location) {
           doc.text("LOCATION", 8, sidebarY)
           doc.text(resumeData.personal_info.location, 8, sidebarY + 5)
+          sidebarY += 15
+        }
+        if (resumeData.personal_info?.website) {
+          doc.text("WEBSITE", 8, sidebarY)
+          doc.text(resumeData.personal_info.website, 8, sidebarY + 5)
+          sidebarY += 15
+        }
+        if (resumeData.personal_info?.linkedin) {
+          doc.text("LINKEDIN", 8, sidebarY)
+          doc.text(resumeData.personal_info.linkedin, 8, sidebarY + 5)
         }
 
         doc.setTextColor(0, 0, 0)
@@ -159,18 +185,25 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
         doc.text(resumeData.personal_info?.full_name || "Name", pageWidth / 2, yPosition, { align: "center" })
         yPosition += 6
 
-        doc.setFontSize(10)
-        doc.setFont("times", "normal")
         if (resumeData.personal_info?.email) {
           doc.text(resumeData.personal_info.email, pageWidth / 2, yPosition, { align: "center" })
           yPosition += 5
         }
 
-        const academicContact = [resumeData.personal_info?.phone, resumeData.personal_info?.location]
+        const academicBasicContact = [resumeData.personal_info?.phone, resumeData.personal_info?.location]
           .filter(Boolean)
           .join(" • ")
-        if (academicContact) {
-          doc.text(academicContact, pageWidth / 2, yPosition, { align: "center" })
+        if (academicBasicContact) {
+          doc.text(academicBasicContact, pageWidth / 2, yPosition, { align: "center" })
+          yPosition += 5
+        }
+
+        const academicWebContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" • ")
+        if (academicWebContact) {
+          doc.text(academicWebContact, pageWidth / 2, yPosition, { align: "center" })
+          yPosition += 5
         }
         yPosition += 15
 
@@ -198,15 +231,24 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(9)
-        const techContact = [
+        const techBasicContact = [
           resumeData.personal_info?.email,
           resumeData.personal_info?.phone,
           resumeData.personal_info?.location,
         ]
           .filter(Boolean)
           .join(" | ")
-        doc.text(techContact, margin, yPosition)
-        yPosition += 15
+        doc.text(techBasicContact, margin, yPosition)
+        yPosition += 5
+
+        const techWebContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" | ")
+        if (techWebContact) {
+          doc.text(techWebContact, margin, yPosition)
+          yPosition += 5
+        }
+        yPosition += 5
 
         // Accent line
         doc.setDrawColor(0, 150, 136)
@@ -225,15 +267,24 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         doc.setFontSize(10)
         doc.setFont("helvetica", "normal")
-        const classicContactLine = [
+        const classicBasicContact = [
           resumeData.personal_info?.email,
           resumeData.personal_info?.phone,
           resumeData.personal_info?.location,
         ]
           .filter(Boolean)
           .join(" • ")
-        doc.text(classicContactLine, margin, yPosition)
-        yPosition += 15
+        doc.text(classicBasicContact, margin, yPosition)
+        yPosition += 5
+
+        const classicWebContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" • ")
+        if (classicWebContact) {
+          doc.text(classicWebContact, margin, yPosition)
+          yPosition += 5
+        }
+        yPosition += 10
 
         // Add horizontal line
         doc.setLineWidth(0.5)
@@ -250,15 +301,24 @@ export function PDFPreview({ resumeId, resumeTitle }: PDFPreviewProps) {
 
         doc.setFontSize(10)
         doc.setFont("helvetica", "normal")
-        const modernContactLine = [
+        const modernBasicContact = [
           resumeData.personal_info?.email,
           resumeData.personal_info?.phone,
           resumeData.personal_info?.location,
         ]
           .filter(Boolean)
           .join(" • ")
-        doc.text(modernContactLine, margin, yPosition)
-        yPosition += 15
+        doc.text(modernBasicContact, margin, yPosition)
+        yPosition += 5
+
+        const modernWebContact = [resumeData.personal_info?.website, resumeData.personal_info?.linkedin]
+          .filter(Boolean)
+          .join(" • ")
+        if (modernWebContact) {
+          doc.text(modernWebContact, margin, yPosition)
+          yPosition += 5
+        }
+        yPosition += 10
 
         // Add horizontal line
         doc.setLineWidth(0.5)
